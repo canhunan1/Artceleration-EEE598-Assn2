@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import edu.asu.msrs.artcelerationlibrary.ArtLib;
+
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
 
@@ -50,7 +51,7 @@ public class MainViewer extends AppCompatActivity {
         status2 = (TextView) findViewById(R.id.statusText2);
         artview = (ArtView) findViewById(R.id.artView);
 
-        artlib = new ArtLib();
+        artlib = new ArtLib(this);
 
         artlib.registerHandler(new TransformHandler() {
             @Override
