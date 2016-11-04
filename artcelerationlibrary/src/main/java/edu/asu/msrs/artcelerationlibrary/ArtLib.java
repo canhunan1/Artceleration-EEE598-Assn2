@@ -15,6 +15,9 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by rlikamwa on 10/2/2016.
@@ -68,12 +71,18 @@ public class ArtLib {
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
         try {
-            MemoryFile memoryFile = new MemoryFile("someone",30);
+            MemoryFile memoryFile = new MemoryFile("someone",10);
+            String source = "testSt";
+            byte[] byteArray = source.getBytes();
+            memoryFile.writeBytes(byteArray, 0, 0, source.length());
+
+            InputStream is = memoryFile.getInputStream();
+            System.out.println("is is"+is.read());
             ParcelFileDescriptor pfd =  MemoryFileUtil.getParcelFileDescriptor(memoryFile);
             int what = MSG_MULTI;
             Bundle dataBundle = new Bundle();
             dataBundle.putParcelable("pfd",pfd);
-            Message msg = Message.obtain(null,what, 2, 3);
+            Message msg = Message.obtain(null,what,2,3);
             msg.setData(dataBundle);
             try {
                 mMessenger.send(msg);
@@ -84,6 +93,31 @@ public class ArtLib {
             e.printStackTrace();
         }
         return true;
+    }
+
+
+
+    public void testPurge() throws Exception {
+        byte[] testString = new byte[3];
+        testString[1] = 1;
+        List<MemoryFile> files = new ArrayList<MemoryFile>();
+        while (true) {
+            MemoryFile newFile = new MemoryFile("MemoryFileTest", 1000000);
+            newFile.allowPurging(true);
+            newFile.writeBytes(testString, 0, 0, testString.length);
+            files.add(newFile);
+            for (MemoryFile file : files) {
+                try {
+                    file.readBytes(testString, 0, 0, testString.length);
+                } catch (IOException e) {
+                    // Expected
+                    for (MemoryFile fileToClose : files) {
+                        fileToClose.close();
+                    }
+                    return;
+                }
+            }
+        }
     }
 
 }

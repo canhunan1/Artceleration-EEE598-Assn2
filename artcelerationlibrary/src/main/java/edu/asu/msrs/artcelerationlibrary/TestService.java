@@ -11,15 +11,21 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 
 public class TestService extends Service {
+
+    public void onCreate(){
+        Log.v(TAG,"test");
+    }
+
     public TestService() {
     }
 
-    String TAG = "ArtTransformService";
+    static String TAG = "ArtTransformService";
     static final int MSG_HELLO = 0;
     static final int MSG_MULTI = 1;
-    class ArtTransformHandler extends Handler {
+    static class ArtTransformHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             Log.d(TAG, "handleMessage(msg)");
@@ -30,8 +36,21 @@ public class TestService extends Service {
                 case MSG_MULTI:
                     Bundle dataBundle = msg.getData();
                     ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
-                    FileInputStream fios = new FileInputStream(pfd.getFileDescriptor());
+                    FileInputStream fis = new FileInputStream(pfd);
+                    FileInputStream fis = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+                    StringBuilder builder = new StringBuilder();
+                    //String sm = new String(fis);
+                    int ch;
+                    try {
+                        while((ch = fis.read()) != -1){
+                            builder.append((char)ch);
+                            System.out.println(ch);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     int result = msg.arg1+msg.arg2;
+                    Log.d(TAG, builder.toString());
                     Log.d(TAG, "Multi" + result);
                     break;
                 default:
