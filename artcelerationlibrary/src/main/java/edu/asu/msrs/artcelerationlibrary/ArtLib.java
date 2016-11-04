@@ -6,10 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.MemoryFile;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+
+import java.io.IOException;
 
 /**
  * Created by rlikamwa on 10/2/2016.
@@ -62,15 +67,22 @@ public class ArtLib {
     }
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
-        int what = MSG_MULTI;
-        Message msg = Message.obtain(null,what, 2, 3);
-
         try {
-            mMessenger.send(msg);
-        } catch (RemoteException e) {
+            MemoryFile memoryFile = new MemoryFile("someone",30);
+            ParcelFileDescriptor pfd =  MemoryFileUtil.getParcelFileDescriptor(memoryFile);
+            int what = MSG_MULTI;
+            Bundle dataBundle = new Bundle();
+            dataBundle.putParcelable("pfd",pfd);
+            Message msg = Message.obtain(null,what, 2, 3);
+            msg.setData(dataBundle);
+            try {
+                mMessenger.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
         return true;
     }
 
