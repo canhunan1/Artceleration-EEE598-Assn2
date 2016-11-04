@@ -36,7 +36,7 @@ public class TestService extends Service {
                 case MSG_MULTI:
                     Bundle dataBundle = msg.getData();
                     ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
-                    FileInputStream fis = new FileInputStream(pfd);
+                    //FileInputStream fis = new FileInputStream(pfd);
                     FileInputStream fis = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
                     StringBuilder builder = new StringBuilder();
                     //String sm = new String(fis);
