@@ -14,8 +14,8 @@ import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class ArtLib {
         }
     };
     public void init(){
-        mActivity.bindService(new Intent(mActivity, TestService.class),mServiceConnection, Context.BIND_AUTO_CREATE);
+        mActivity.bindService(new Intent(mActivity, TransformService.class),mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public String[] getTransformsArray(){
@@ -71,13 +71,14 @@ public class ArtLib {
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
         try {
-            MemoryFile memoryFile = new MemoryFile("someone",10);
-            String source = "testSt";
-            byte[] byteArray = source.getBytes();
-            memoryFile.writeBytes(byteArray, 0, 0, source.length());
-
-            InputStream is = memoryFile.getInputStream();
-            System.out.println("is is"+is.read());
+            //Write the image to the memory file
+            //Firstly,convert bitmap to byte array
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            img.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            //Secondly, put the stream into the memory file.
+            MemoryFile memoryFile = new MemoryFile("someone",byteArray.length);
+            memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
             ParcelFileDescriptor pfd =  MemoryFileUtil.getParcelFileDescriptor(memoryFile);
             int what = MSG_MULTI;
             Bundle dataBundle = new Bundle();
