@@ -13,13 +13,13 @@ import android.util.Log;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class TestService extends Service {
+public class TransformService extends Service {
 
     public void onCreate(){
         Log.v(TAG,"test");
     }
 
-    public TestService() {
+    public TransformService() {
     }
 
     static String TAG = "ArtTransformService";

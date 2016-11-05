@@ -48,7 +48,7 @@ public class ArtLib {
         }
     };
     public void init(){
-        mActivity.bindService(new Intent(mActivity, TestService.class),mServiceConnection, Context.BIND_AUTO_CREATE);
+        mActivity.bindService(new Intent(mActivity, TransformService.class),mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public String[] getTransformsArray(){
