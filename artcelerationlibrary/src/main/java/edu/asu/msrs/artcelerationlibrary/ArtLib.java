@@ -81,6 +81,7 @@ public class ArtLib {
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
             ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
+            memoryFile.close();
             int what = MSG_MULTI;
             Bundle dataBundle = new Bundle();
             dataBundle.putParcelable("pfd", pfd);

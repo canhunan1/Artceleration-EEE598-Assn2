@@ -43,10 +43,10 @@ public class TransformService extends Service {
             switch (msg.what) {
                 case MSG_HELLO:
                     Log.d(TAG, "Hello!");
-                    Log.v("nativeInTransform",myStringFromJNI());
 
                     break;
                 case MSG_MULTI:
+                    Log.v("nativeInTransform",myStringFromJNI());
                     Bundle dataBundle = msg.getData();
                     ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
                     InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
