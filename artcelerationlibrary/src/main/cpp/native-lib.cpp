@@ -6,7 +6,7 @@
 #include <string>
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_edu_asu_msrs_artcelerationlibrary_TestService_myStringFromJNI(
+Java_edu_asu_msrs_artcelerationlibrary_TransformService_myStringFromJNI(
         JNIEnv *env,
         jobject /* this */) {
     jstring hello = (jstring) "ddddd";

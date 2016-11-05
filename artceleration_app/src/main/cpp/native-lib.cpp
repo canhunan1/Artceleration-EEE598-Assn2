@@ -2,7 +2,7 @@
 #include <string>
 extern "C"
 jstring
-Java_edu_asu_msrs_artcelerationlibrary_TestService_myStringFromJNI(
+Java_edu_asu_msrs_artcelerationlibrary_TransformService_myStringFromJNI(
         JNIEnv *env,
         jobject /* this */) {
     std::string hello = "Hello from C++";

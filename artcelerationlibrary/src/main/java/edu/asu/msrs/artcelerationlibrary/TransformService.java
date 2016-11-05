@@ -15,7 +15,7 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-public class TestService extends Service {
+public class TransformService extends Service {
 
     static {
         System.loadLibrary("my-native-lib");
@@ -26,7 +26,7 @@ public class TestService extends Service {
         Log.v(TAG, "test");
     }
 
-    public TestService() {
+    public TransformService() {
         //Log.v("nativeInTransform",myStringFromJNI());
 
       //  Log.v("nativeInTransform",String.valueOf(JNI_OnLoad()));
@@ -43,7 +43,7 @@ public class TestService extends Service {
             switch (msg.what) {
                 case MSG_HELLO:
                     Log.d(TAG, "Hello!");
-                    Log.v("nativeInTransform","ddd");
+                    Log.v("nativeInTransform",myStringFromJNI());
 
                     break;
                 case MSG_MULTI:
@@ -74,6 +74,6 @@ public class TestService extends Service {
     }
 
     public native static String myStringFromJNI();
-    public native static int JNI_OnLoad();
+   // public native static int JNI_OnLoad();
 
 }
