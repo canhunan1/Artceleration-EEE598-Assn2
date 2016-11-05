@@ -4,8 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import edu.asu.msrs.artcelerationlibrary.ArtLib;
-
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
 
@@ -40,6 +40,7 @@ public class MainViewer extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v("native test",stringFromJNI());
         setContentView(R.layout.activity_main_viewer);
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -99,4 +100,5 @@ public class MainViewer extends AppCompatActivity {
         Toast.makeText(getBaseContext(), str,
                 Toast.LENGTH_LONG).show();
     }
+    public native static String stringFromJNI();
 }

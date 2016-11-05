@@ -17,11 +17,17 @@ import java.io.InputStream;
 
 public class TransformService extends Service {
 
+    static {
+        System.loadLibrary("native-lib");
+    }
+
+
     public void onCreate() {
         Log.v(TAG, "test");
     }
 
     public TransformService() {
+        Log.v("nativeInTransform",stringFromJNI());
     }
 
     static String TAG = "ArtTransformService";
@@ -62,4 +68,7 @@ public class TransformService extends Service {
     public IBinder onBind(Intent intent) {
         return mMessenger.getBinder();
     }
+
+    public native static String stringFromJNI();
+
 }
