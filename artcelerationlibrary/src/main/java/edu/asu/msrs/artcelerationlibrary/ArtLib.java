@@ -11,10 +11,8 @@ import android.os.IBinder;
 import android.os.MemoryFile;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +49,7 @@ public class ArtLib {
     };
 
     public void init() {
-        mActivity.bindService(new Intent(mActivity, TransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
+        mActivity.bindService(new Intent(mActivity, TestService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public String[] getTransformsArray() {
@@ -74,26 +72,27 @@ public class ArtLib {
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
         try {
-            //Write the image to the memory file
+           /* //Write the image to the memory file
             //Firstly,convert bitmap to byte array
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             img.compress(Bitmap.CompressFormat.PNG, 100, stream);
             byte[] byteArray = stream.toByteArray();
             //Secondly, put the stream into the memory file.
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
-            memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
-            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
-            int what = MSG_MULTI;
+            //memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
+            memoryFile.close();
+            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);*/
+            int what = MSG_HELLO;
             Bundle dataBundle = new Bundle();
-            dataBundle.putParcelable("pfd", pfd);
+            //dataBundle.putParcelable("pfd", pfd);
             Message msg = Message.obtain(null, what, 2, 3);
-            msg.setData(dataBundle);
+           // msg.setData(dataBundle);
             try {
                 mMessenger.send(msg);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return true;

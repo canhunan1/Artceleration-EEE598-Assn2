@@ -6,7 +6,6 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,9 +21,9 @@ import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
 
 public class MainViewer extends AppCompatActivity {
-    static {
+    /*static {
         System.loadLibrary("native-lib");
-    }
+    }*/
     private Spinner spinner;
     private TextView status1;
     private TextView status2;
@@ -40,7 +39,7 @@ public class MainViewer extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v("native test",stringFromJNI());
+        //Log.v("native test",stringFromJNI());
         setContentView(R.layout.activity_main_viewer);
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -100,5 +99,5 @@ public class MainViewer extends AppCompatActivity {
         Toast.makeText(getBaseContext(), str,
                 Toast.LENGTH_LONG).show();
     }
-    public native static String stringFromJNI();
+   // public native static String stringFromJNI();
 }

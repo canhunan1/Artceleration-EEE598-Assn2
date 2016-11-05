@@ -15,10 +15,10 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-public class TransformService extends Service {
+public class TestService extends Service {
 
     static {
-        System.loadLibrary("native-lib");
+        System.loadLibrary("my-native-lib");
     }
 
 
@@ -26,8 +26,10 @@ public class TransformService extends Service {
         Log.v(TAG, "test");
     }
 
-    public TransformService() {
-        Log.v("nativeInTransform",stringFromJNI());
+    public TestService() {
+        //Log.v("nativeInTransform",myStringFromJNI());
+
+      //  Log.v("nativeInTransform",String.valueOf(JNI_OnLoad()));
     }
 
     static String TAG = "ArtTransformService";
@@ -41,6 +43,8 @@ public class TransformService extends Service {
             switch (msg.what) {
                 case MSG_HELLO:
                     Log.d(TAG, "Hello!");
+                    Log.v("nativeInTransform","ddd");
+
                     break;
                 case MSG_MULTI:
                     Bundle dataBundle = msg.getData();
@@ -69,6 +73,7 @@ public class TransformService extends Service {
         return mMessenger.getBinder();
     }
 
-    public native static String stringFromJNI();
+    public native static String myStringFromJNI();
+    public native static int JNI_OnLoad();
 
 }
