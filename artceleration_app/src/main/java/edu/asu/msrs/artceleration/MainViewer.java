@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -56,6 +57,7 @@ public class MainViewer extends AppCompatActivity {
         artlib.registerHandler(new TransformHandler() {
             @Override
             public void onTransformProcessed(Bitmap img_out) {
+                Log.d("In the mainviewr","img_out");
                 artview.setTransBmp(img_out);
             }
         });

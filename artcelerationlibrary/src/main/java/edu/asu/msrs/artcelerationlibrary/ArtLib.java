@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -18,13 +19,14 @@ import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by rlikamwa on 10/2/2016.
  */
 
 public class ArtLib {
-    private TransformHandler artlistener;
+    static private TransformHandler artlistener;
     private Activity mActivity;
     private Messenger mMessenger;
     private boolean mBound;
@@ -35,13 +37,31 @@ public class ArtLib {
         mActivity = activity;
         init();
     }
-
-    class IncomingHandler extends Handler {
+    //called when get the message from the service. Usually mean that a transform is finised.
+    static class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+            Log.d("eddd",String.valueOf(msg.what));
+            Bundle dataBundle = msg.getData();
+            ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
+            if(pfd == null){
+                Log.d("pfd","null");
+            }else {
+                Log.d("image ","has been sent back to the client");
+                InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+                //convertInputStreamToBitmap
+                Bitmap img = BitmapFactory.decodeStream(istream);
+
+
+                if (artlistener != null) {
+                    artlistener.onTransformProcessed(img);
+                    Log.d("efd","send the listener");
+                }
+            }
+
             switch (msg.what) {
                 case 1:
-                   // mCallbackText.setText("Received from service: " + msg.arg1);
+                    // mCallbackText.setText("Received from service: " + msg.arg1);
                     break;
                 default:
                     super.handleMessage(msg);
@@ -57,23 +77,7 @@ public class ArtLib {
             mMessenger = new Messenger(service);
             mBound = true;
 
-            try {
-                Message msg = Message.obtain(null,
-                        1);
-                msg.replyTo = inMessenger;
-                mMessenger.send(msg);
 
-                // Give it some value as an example.
-                msg = Message.obtain(null,
-                        6, this.hashCode(), 0);
-                Log.d("ddd",String.valueOf(msg.what));
-                mMessenger.send(msg);
-            } catch (RemoteException e) {
-                // In this case the service has crashed before we could even
-                // do anything with it; we can count on soon being
-                // disconnected (and then reconnected if it can be restarted)
-                // so there is no need to do anything here.
-            }
         }
 
         @Override
@@ -116,7 +120,7 @@ public class ArtLib {
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
             ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
-            //memoryFile.close();
+            memoryFile.close();
             int what = MSG_MULTI;
             Bundle dataBundle = new Bundle();
             dataBundle.putParcelable("pfd", pfd);
@@ -124,10 +128,13 @@ public class ArtLib {
             msg.setData(dataBundle);
 
 
+            msg.replyTo = inMessenger;
+
+            Log.d("ddd", String.valueOf(msg.what));
+
+
             //when the transform finished, trigger the callback function
-            if(artlistener != null) {
-                artlistener.onTransformProcessed(img);
-            }
+
             try {
                 mMessenger.send(msg);
             } catch (RemoteException e) {
@@ -140,4 +147,5 @@ public class ArtLib {
 
 
     }
+
 }
