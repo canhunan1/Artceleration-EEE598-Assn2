@@ -23,6 +23,7 @@ import java.io.InputStream;
 
 /**
  * Created by rlikamwa on 10/2/2016.
+ * This class is art library class.
  */
 
 public class ArtLib {
@@ -30,18 +31,15 @@ public class ArtLib {
     private Activity mActivity;
     private Messenger mMessenger;
     private boolean mBound;
-    static final int MSG_HELLO = 0;
-    static final int MSG_MULTI = 1;
 
     public ArtLib(Activity activity) {
         mActivity = activity;
         init();
     }
-    //called when get the message from the service. Usually mean that a transform is finised.
-    static class IncomingHandler extends Handler {
+    //This handler is to handle the message from the service.
+    static private class ImageProcessedHandler extends Handler {
         @Override
-        public void handleMessage(Message msg) {
-            Log.d("eddd",String.valueOf(msg.what));
+        public void handleMessage(Message msg) {//Called when get the message from the service. Usually mean that a transform is finised.
             Bundle dataBundle = msg.getData();
             ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
             if(pfd == null){
@@ -51,33 +49,20 @@ public class ArtLib {
                 InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
                 //convertInputStreamToBitmap
                 Bitmap img = BitmapFactory.decodeStream(istream);
-
-
-                if (artlistener != null) {
+                if (artlistener != null) {//triger the listener to send back the processed image to the activity
                     artlistener.onTransformProcessed(img);
-                    Log.d("efd","send the listener");
                 }
-            }
-
-            switch (msg.what) {
-                case 1:
-                    // mCallbackText.setText("Received from service: " + msg.arg1);
-                    break;
-                default:
-                    super.handleMessage(msg);
             }
         }
     }
 
-    final Messenger inMessenger = new Messenger(new IncomingHandler());
+    final Messenger inMessenger = new Messenger(new ImageProcessedHandler());
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mMessenger = new Messenger(service);
             mBound = true;
-
-
         }
 
         @Override
@@ -92,6 +77,7 @@ public class ArtLib {
     }
 
     public String[] getTransformsArray() {
+        //String[] transforms = {"Color Filter", "Motion Blur","Gaussian Blur", "Tilt Shift", "Neon Edges", "Test Transform"};
         String[] transforms = {"Gaussian Blur", "Neon edges", "Color Filter"};
         return transforms;
     }
@@ -109,7 +95,16 @@ public class ArtLib {
         this.artlistener = artlistener;
     }
 
+    /*
+    * This method is used by the activity to request a transform.
+    * @param img        the image to be processed
+    * @param index      the type of the transform
+    * @param intArgs    the integer arguments
+    * @param floatArgs  the float arguments
+    * @return           true if the transform is started successfully, false otherwise
+    * */
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
+
         try {
             //Write the image to the memory file
             //Firstly,convert bitmap to byte array
@@ -121,31 +116,26 @@ public class ArtLib {
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
             ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
             memoryFile.close();
-            int what = MSG_MULTI;
             Bundle dataBundle = new Bundle();
+            //put the image in the bundle, sharing the memory with ashmen
             dataBundle.putParcelable("pfd", pfd);
-            Message msg = Message.obtain(null, what, 2, 3);
+            dataBundle.putIntArray("intArgs", intArgs);
+            dataBundle.putFloatArray("floatArgs", floatArgs);
+            //index means the type of the transform.
+            int what = index;
+            Message msg = Message.obtain(null, what);
             msg.setData(dataBundle);
-
-
             msg.replyTo = inMessenger;
-
-            Log.d("ddd", String.valueOf(msg.what));
-
-
-            //when the transform finished, trigger the callback function
-
             try {
                 mMessenger.send(msg);
             } catch (RemoteException e) {
                 e.printStackTrace();
+                return false;
             }
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
         return true;
-
-
     }
-
 }
