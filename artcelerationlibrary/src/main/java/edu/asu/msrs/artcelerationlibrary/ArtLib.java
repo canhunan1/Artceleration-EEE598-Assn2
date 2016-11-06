@@ -7,12 +7,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.MemoryFile;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,11 +36,44 @@ public class ArtLib {
         init();
     }
 
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 1:
+                   // mCallbackText.setText("Received from service: " + msg.arg1);
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+
+    final Messenger inMessenger = new Messenger(new IncomingHandler());
+
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mMessenger = new Messenger(service);
             mBound = true;
+
+            try {
+                Message msg = Message.obtain(null,
+                        1);
+                msg.replyTo = inMessenger;
+                mMessenger.send(msg);
+
+                // Give it some value as an example.
+                msg = Message.obtain(null,
+                        6, this.hashCode(), 0);
+                Log.d("ddd",String.valueOf(msg.what));
+                mMessenger.send(msg);
+            } catch (RemoteException e) {
+                // In this case the service has crashed before we could even
+                // do anything with it; we can count on soon being
+                // disconnected (and then reconnected if it can be restarted)
+                // so there is no need to do anything here.
+            }
         }
 
         @Override
@@ -81,12 +116,18 @@ public class ArtLib {
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
             ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
-            memoryFile.close();
+            //memoryFile.close();
             int what = MSG_MULTI;
             Bundle dataBundle = new Bundle();
             dataBundle.putParcelable("pfd", pfd);
             Message msg = Message.obtain(null, what, 2, 3);
             msg.setData(dataBundle);
+
+
+            //when the transform finished, trigger the callback function
+            if(artlistener != null) {
+                artlistener.onTransformProcessed(img);
+            }
             try {
                 mMessenger.send(msg);
             } catch (RemoteException e) {
@@ -96,5 +137,7 @@ public class ArtLib {
             e.printStackTrace();
         }
         return true;
+
+
     }
 }

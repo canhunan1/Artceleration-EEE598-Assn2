@@ -2,8 +2,6 @@ package edu.asu.msrs.artcelerationlibrary;
 
 import android.app.Service;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -12,15 +10,15 @@ import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.util.ArrayList;
 
 public class TransformService extends Service {
 
     static {
         System.loadLibrary("my-native-lib");
     }
-
+    static ArrayList<Messenger> mClients = new ArrayList<>();
+    TransformHandler transformHandler;
 
     public void onCreate() {
         Log.v(TAG, "test");
@@ -49,14 +47,29 @@ public class TransformService extends Service {
                     Log.v("nativeInTransform",myStringFromJNI());
                     Bundle dataBundle = msg.getData();
                     ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
-                    InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+                    //InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
                     //convertInputStreamToBitmap
-                    Bitmap img = BitmapFactory.decodeStream(istream);
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    //Bitmap img = BitmapFactory.decodeStream(istream);
+                    //do some transform here
 
+                    //When transfrom finished, send the image back
+                    //TransformHandler.onTransformProcessed(img);
+                    /*mClients.add(msg.replyTo);
+                    if(msg.replyTo==null){
+                        Log.d("mclient is ","null");
+                    }
+                    try {
+                        mClients.get(0).send(Message.obtain(null,
+                                5, 1, 0));
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }*/
+                    /*//for test
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     img.compress(Bitmap.CompressFormat.PNG, 100, stream);
                     byte[] byteArray = stream.toByteArray();
-                    //Log.v(TAG, byteArray.toString());
+                    Log.v(TAG, byteArray.toString());*/
+
                     int result = msg.arg1 + msg.arg2;
                     Log.d(TAG, "Multi" + result);
                     break;
