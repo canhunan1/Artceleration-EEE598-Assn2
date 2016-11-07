@@ -6,21 +6,6 @@ By Jianan Yang and Wenhao Chen
 ## Goal
 Artceleration is an Android library framework / service which enables user application to implement artistic transforms for images. In current version, it includes 5 different image tranformation functions for app developer to use - COLOR_FILTER, MOTION_BLUR, GAUSSIAN_BLUR, TILT_SHIFT and NEON_EDGES.
 
-## Install
-To be determined...
-
-##Developement
-
-To be determined...
-To develope, you need to confingure the build.gradle (app) firstly. You need to change directory ```storeFile file('D:/asu/asu/EEE598/AugGraffitiDev/keystore.jks')``` to your local directory
-```
-debug {
-            keyAlias 'AugGraffiti'
-            keyPassword '940205'
-            storeFile file('D:/asu/asu/EEE598/AugGraffitiDev/keystore.jks')
-            storePassword '940205'
-        }
-```
 ## Design
 The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick can use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing in the yellow region which is a dummy image transformation we implement for this checkout point.
 
@@ -67,6 +52,42 @@ artlib.registerHandler(new TransformHandler() {
         });
 ```
 
+In library, the function ```requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs)``` is defined, it has four argument, when this function is called in activity. The ```Bitmap``` object ```img``` is firstly compressed and put in to a ```ByteArrayOutputStream``` object ```stream``` and then this ```stream``` is converted to byteArray saved in ```byte[]``` object ```byteArray```. This byteArray is then write in to ashmem ```MemoryFile``` object ```memoryFile``` using ```writeBytes()``` function which takes the ```byteArray``` two offsets and the size of the memory as arguments. Then the information of this ashmem is storted in ```ParcelFileDescriptor``` object ```pfd``` and this ```pfd``` is bundled and stored in a ```Message``` object ```msg``` USING ```setData()``` function. The image transformation algorithm index is stored in the ```msg``` as well which determines what function should the service perform. Then this ```Message``` is send to service by ```Messenger``` using ```send()``` function. An another important thing is set up anthoer ```Messenger``` to handle the msg send back by service, here we use ```msg.replyTo``` to set this Messenger as ```inMessenger```.
+
+```
+public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
+
+        try {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            img.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+
+            MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
+            memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
+            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
+            memoryFile.close();
+            Bundle dataBundle = new Bundle();
+            dataBundle.putParcelable("pfd", pfd);
+            dataBundle.putIntArray("intArgs", intArgs);
+            dataBundle.putFloatArray("floatArgs", floatArgs);
+           
+            int what = index;
+            Message msg = Message.obtain(null, what);
+            msg.setData(dataBundle);
+            msg.replyTo = inMessenger;
+            try {
+                mMessenger.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+```
 
 
 
