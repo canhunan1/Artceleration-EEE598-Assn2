@@ -88,11 +88,99 @@ public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] fl
         return true;
     }
 ```
+Once the request or message is sent to service, the ```handleMessage()``` callback function is invoked and the transformation index is retrived by calling ```msg.what``` in ```transformHelper(msg)``` method. 
 
+```
+@Override
+        public void handleMessage(Message msg) {
+            trasnformHelper(msg);
+        }
+```
+```
+private void trasnformHelper(Message msg) {
+        switch (msg.what) {
+            case COLOR_FILTER:
+                break;
+            case MOTION_BLUR:
+                break;
+            case GAUSSIAN_BLUR:
+                break;
+            case TILT_SHIFT:
+                break;
+            case NEON_EDGES:
+                break;
+            case TEST_TRANS:
+            default:
+                break;
+        }
+        Bitmap mutableBitmap = getBitmap(msg);
+        testTransform(mutableBitmap);
+        imageProcessed(mutableBitmap, msg);
+    }
+```
+Then the image saved in the ashmem is retrived from the ```getBitmap(msg)``` fucntion with the Message as input argument. The ```Bundle``` is first get by ```getData()``` method and the ashmem information is get from the key-value pair with key as ```pfd```. Then the data stream is get from the ```ParcelFileDescriptor``` object ```pfd``` and saved in ```InputStream``` object ```istream``` and then the image is built up by calling ```decodeStream()``` method which has ```istream``` as input argment and image is saved in a ```Bitmap``` object ```img``` and then this Bitmap is converted to ```ARGB_8888``` format and then returned.
 
+```
+private Bitmap getBitmap(Message msg) {
+        Bundle dataBundle = msg.getData();
+        ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
+        InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
 
+        Bitmap img = BitmapFactory.decodeStream(istream);
+        return img.copy(Bitmap.Config.ARGB_8888, true);
+    }
+```
 
+Then we did a very simple change to the image just as a test, we change a certain part of the image into Yellow. Once the image processing is done, we call the ```imageProcessed()``` function to send the image back to library. This method has two arguments, one the the process ```Bitmap``` image the other is ```Message```. The Bitmap should be the processed image, the Message should be the message which was sent in before. Firstly, the image is compressed and changed to ```byte[]``` and saved into another ashmem using the same method before. Then the ashmem info is bundled and saved in the message using the same method as before. The Messenger used to transfer the image back to library is saved in a Messenger list ```ArrayList<Messenger>``` with an object ```mClicent```.  Then the processed image using a specific function is send back to library by calling ```mClients.get(0).send(msg);```.
 
+```
+private void imageProcessed(Bitmap img, Message msg){
+        int what = 0;
+        Bundle dataBundle = new Bundle();
+        mClients.add(msg.replyTo);
+        if (msg.replyTo == null) {
+            Log.d("mclient is ", "null");
+        }
+        try {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            img.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
+            memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
+            ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memoryFile);
+            memoryFile.close();
+            dataBundle.putParcelable("pfd", pfd);
+            msg.setData(dataBundle);
+            msg.obtain(null,6, 2, 3);
+            mClients.get(0).send(msg);
+        } catch (RemoteException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+```
+
+Then in the libraray ```ArtLib```, the send back message is handled by a ```ImageProcessedHandler``` class which extends ```Handler```. The callback function ```handleMessage(Message msg) ``` is invoked when receiving a message, and the image is retrived using the same method as described above, get ```Bundle``` - get ```ParcelFileDescriptor```- get  ```InputStream``` and get ```Bitmap```. Finally, the image is sendback to client through the previously registered interface ```TransformHandler``` by calling its method ```onTransformProcessed()``` with the Bitmap image as input argument.
+
+```
+static private class ImageProcessedHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            Bundle dataBundle = msg.getData();
+            ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
+            if(pfd == null){
+                Log.d("pfd","null");
+            }else {
+                Log.d("image ","has been sent back to the client");
+                InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+                //convertInputStreamToBitmap
+                Bitmap img = BitmapFactory.decodeStream(istream);
+                if (artlistener != null) {//triger the listener to send back the processed image to the activity
+                    artlistener.onTransformProcessed(img);
+                }
+            }
+        }
+    }
+```
 
 
 
