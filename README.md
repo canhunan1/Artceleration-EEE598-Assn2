@@ -6,7 +6,7 @@ By Jianan Yang and Wenhao Chen
 ## Goal
 Artceleration is an Android library framework / service which enables user application to implement artistic transforms for images. In current version, it includes 5 different image tranformation functions for app developer to use - COLOR_FILTER, MOTION_BLUR, GAUSSIAN_BLUR, TILT_SHIFT and NEON_EDGES.
 
-## Design
+## Client-end App
 The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick can use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing in the yellow region which is a dummy image transformation we implement for this checkout point.
 
 ![alt tag](https://cloud.githubusercontent.com/assets/21367763/20068194/133eafc4-a4d5-11e6-8d02-bb0ff2de6e1f.png) Sample app
@@ -181,8 +181,23 @@ static private class ImageProcessedHandler extends Handler {
     }
 ```
 
+## Strategy
+1. In general, we discuss coding logic and brainstorm ideas together. As for task, one person majorly dedicated on writing code and the other person focuses on debugging and documentation writing.
 
+2. We meet weekly, checkout progress, solve issues and make plans for the next week. We made several internal check points:
+```
+            - discuss and try to understand the logic behine assignment;
+            - review and type the servie/library-setup code taungt in class;
+            - finish the rest of code required for a complete service/library, majorly how to send processed image back to client side;
+            - documentation writing;
 
+```
+
+## Challenges
+The major challenge is to understand how binder and messenger works together to send message and the logic behinde. Another chanllenge is how to send processed image back to client.
+
+## Improvement
+We will try to implement AsyncTask and using multi-threading method to do multiple image processing in the same time.
 
 
 
