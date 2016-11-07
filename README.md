@@ -131,7 +131,7 @@ private Bitmap getBitmap(Message msg) {
     }
 ```
 
-Then we did a very simple change to the image just as a test, we change a certain part of the image into Yellow. Once the image processing is done, we call the ```imageProcessed()``` function to send the image back to library. This method has two arguments, one the the process ```Bitmap``` image the other is ```Message```. The Bitmap should be the processed image, the Message should be the message which was sent in before. Firstly, the image is compressed and changed to ```byte[]``` and saved into another ashmem using the same method before. Then the ashmem info is bundled and saved in the message using the same method as before. The Messenger used to transfer the image back to library is saved in a Messenger list ```ArrayList<Messenger>``` with an object ```mClicent```.  Then the processed image using a specific function is send back to library by calling ```mClients.get(0).send(msg);```.
+Then we did a very simple change to the image just as a test, we change a certain part of the image into Yellow. Once the image processing is done, we call the ```imageProcessed()``` function to send the image back to library. This method has two arguments, one the the process ```Bitmap``` image the other is ```Message```. The Bitmap should be the processed image, the Message should be the message which was sent in before. Firstly, the image is compressed and changed to ```byte[]``` and saved into another ashmem using the same method before. Then the ashmem info is bundled and saved in the message using the same method as before. The Messenger used to transfer the image back to library is saved in a Messenger list ```ArrayList<Messenger>``` with an object ```mClicent```.  Then the processed image using a specific function is send back to library by calling ```mClients.get(0).send(msg);```. The message queue is hanlde by Android, the input message is put into the queue in each thread, and the looper will get the msg from the queue and run it. 
 
 ```
 private void imageProcessed(Bitmap img, Message msg){
@@ -172,7 +172,6 @@ static private class ImageProcessedHandler extends Handler {
             }else {
                 Log.d("image ","has been sent back to the client");
                 InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
-                //convertInputStreamToBitmap
                 Bitmap img = BitmapFactory.decodeStream(istream);
                 if (artlistener != null) {//triger the listener to send back the processed image to the activity
                     artlistener.onTransformProcessed(img);
