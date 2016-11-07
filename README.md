@@ -22,9 +22,9 @@ debug {
         }
 ```
 ## Design
-The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick can use. Below is a sample application which uses our Artceleration library framework/service.
+The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick can use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing in the yellow region which is a dummpy image transformation we implement for this checkout point.
 
-![alt tag](https://cloud.githubusercontent.com/assets/21367763/18692829/e482ac4c-7f51-11e6-8ffd-627f12f5cba6.JPG) Login screen
+![alt tag](https://cloud.githubusercontent.com/assets/21367763/20068194/133eafc4-a4d5-11e6-8d02-bb0ff2de6e1f.png) Sample app
 
 ## Framework/Service Design
 This app is developed in Android Studio. The entire codes is composed of two major parts - .xml and .java file. The .xml files define the layouts of user interface while the .java files form the backbone of this application and enable the functionalies.
