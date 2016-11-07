@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -33,6 +34,7 @@ public class TransformService extends Service {
     static final int TEST_TRANS = 5;
     static final String TAG = "ArtTransformService";
     static ArrayList<Messenger> mClients = new ArrayList<>();
+    static Messenger replyTo;
 
 
     public TransformService() {}
@@ -42,7 +44,9 @@ public class TransformService extends Service {
     class ArtTransformHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            trasnformHelper(msg);
+            //trasnformHelper(msg);
+            replyTo = msg.replyTo;
+            new TransformService.AsyncTest().execute(getBitmap(msg));
         }
 
     }
@@ -67,8 +71,8 @@ public class TransformService extends Service {
                 break;
         }
         Bitmap mutableBitmap = getBitmap(msg);
-        testTransform(mutableBitmap);
-        imageProcessed(mutableBitmap, msg);
+        mutableBitmap = testTransform(mutableBitmap);
+        imageProcessed(mutableBitmap);
     }
     /*
     * This method is to get the bitmap from the message
@@ -88,7 +92,9 @@ public class TransformService extends Service {
     * @param msg
     * @param img    the image which has been processed
     * */
-    private void imageProcessed(Bitmap img, Message msg){
+    private void imageProcessed(Bitmap img){
+        Message msg = new Message();
+        msg.replyTo = replyTo;
         int what = 0;
         //Message msg = Message.obtain(null, what);
         Bundle dataBundle = new Bundle();
@@ -107,7 +113,7 @@ public class TransformService extends Service {
             memoryFile.close();
             dataBundle.putParcelable("pfd", pfd);
             msg.setData(dataBundle);
-            msg.obtain(null,6, 2, 3);
+            //msg.obtain(null,6, 2, 3);
             mClients.get(0).send(msg);
         } catch (RemoteException | IOException e) {
             e.printStackTrace();
@@ -118,8 +124,9 @@ public class TransformService extends Service {
     /*
     * This method is the test transform which change part of the image to be yellow
     * @param img    img should be mutable bitmap
+    * @return img   processed image
     * */
-    private void testTransform(Bitmap img) {
+    private Bitmap testTransform(Bitmap img) {
         int width = img.getWidth();
         int height = img.getHeight();
         for(int x = width/4; x < width/4*3; x++)
@@ -129,6 +136,7 @@ public class TransformService extends Service {
                 img.setPixel(x, y, Color.YELLOW);
             }
         }
+        return img;
     }
 
 
@@ -144,5 +152,21 @@ public class TransformService extends Service {
 
     public native static String myStringFromJNI();
     // public native static int JNI_OnLoad();
+
+    class AsyncTest extends AsyncTask<Bitmap, Float, Bitmap> {
+        //DONE IN BACKGROUND
+
+        @Override
+        protected Bitmap doInBackground(Bitmap...img) {
+            return testTransform(img[0]);
+        }
+
+        //ON UI THREAD
+        protected void onPostExecute(Bitmap mutableBitmap) {
+
+            imageProcessed(mutableBitmap);
+            Log.d("AsyncTest", "AsyncTest finished" );
+        }
+    }
 
 }
