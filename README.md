@@ -22,90 +22,71 @@ debug {
         }
 ```
 ## Design
-The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick can use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing in the yellow region which is a dummpy image transformation we implement for this checkout point.
+The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick can use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing in the yellow region which is a dummy image transformation we implement for this checkout point.
 
 ![alt tag](https://cloud.githubusercontent.com/assets/21367763/20068194/133eafc4-a4d5-11e6-8d02-bb0ff2de6e1f.png) Sample app
 
 ## Framework/Service Design
-This app is developed in Android Studio. The entire codes is composed of two major parts - .xml and .java file. The .xml files define the layouts of user interface while the .java files form the backbone of this application and enable the functionalies.
+In summary, the client's requests are sent to service for image processing, once processing is done, the processed image is sent back to client and shown on app's UI.
 
-The .xml files are stored in ```app\src\main\res\layout``` folder:
-
-- ```activity_main.xml``` - decribes the Login screen, in which the "Sign in with Google" is defined as below
-```
-<com.google.android.gms.common.SignInButton
-    android:id="@+id/login"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom">
-</com.google.android.gms.common.SignInButton>
+In the first step, the user must create a libaray object ```artlib``` through ```artlib =  new ArtLib(this)```. During the library object creation, the activity is binded to service using ```init()``` method, the binding request is sent through the ```Intent()``` object, in which the inputs are an activity object and service object.
 
 ```
-
-- ```activity_google_map.xml``` - decribes the Map screen, in which the "Googe Map" is contained in a ```fragment``` view
+public void init() {
+        mActivity.bindService(new Intent(mActivity, TransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
+}
 ```
-<fragment
-   android:layout_width="match_parent"
-   android:layout_height="422dp"
-   android:name="com.google.android.gms.maps.MapFragment"
-   android:id="@+id/mapFragment"
-   android:layout_alignParentTop="true"
-   android:layout_weight="1.21" />
-```
-
-- ```activity_place.xml``` - decribes the tag placing screen, in which the camera and drawing is implemented in two seperated fullscreen views
+In the service class, the the ```onBind()``` callback function is trigured by ```bindService()``` method and a ```IBinder``` is returned by ```onBind()``` method as the binder corresponding to a messenger ```mMessenger``` which will be used to hanlde message transferring.
 
 ```
-<com.example.jianan.auggraffiti.CameraPreview
-        android:id="@+id/camera_preview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true" />
+@Override
+    public IBinder onBind(Intent intent) {
+        return mMessenger.getBinder();
+    }
 ```
-```
- <com.example.jianan.auggraffiti.Graphique
-        android:id="@+id/graph"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignBottom="@+id/button_save"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-```
-
-- ```activity_collect.xml``` - decribes the tag collecting screen, in which the camera and tagImage is implemented in fullscreen view and ImageView, respectively.
+If the service is connected succefully, the ```onServiceConnected()``` callback function is triggered, one of the input is the ```IBinder``` replied from the ```onBind()``` method and this ```IBinder``` object is connected to another ```Messenger``` object ```mMessenger```in library object to communiate with the ```Messenger``` in service object.
 
 ```
-<com.example.jianan.auggraffiti.CameraPreview
-        android:id="@+id/camera_preview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true" />
-
-    <ImageView
-        android:id="@+id/tag_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="300dp" />
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mMessenger = new Messenger(service);
+            mBound = true;
+        }
 ```
+As of here, the communication `bridge` - ```IBinder-Messenger``` between client and service is setup via ```init()``` method in libaray.
 
-- ```activity_gallery.xml``` - decribes the gallery screen, in which collected images are stored and shown in a ```ListView```.
+Next, the user must register a ```TransformHandler()``` interface oject into the libaray. This is done by calling ```registerHandler()``` method with an ```TransformHandler``` oject as input, here we are using anonymous inner class. The ```onTransformProcessed``` method is over written and will be called once the transformation is done, this callback funciton has a ```Bitmap``` object as input argument and it is the processed image. The transformed image is shown on UI by using ```setTransBmp()``` method.
 
 ```
-<ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/list"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:choiceMode="singleChoice" />
+artlib.registerHandler(new TransformHandler() {
+            @Override
+            public void onTransformProcessed(Bitmap img_out) {
+                Log.d("In the mainviewr","img_out");
+                artview.setTransBmp(img_out);
+            }
+        });
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
