@@ -197,7 +197,7 @@ static private class ImageProcessedHandler extends Handler {
 The major challenge is to understand how binder and messenger works together to send message and the logic behinde. Another chanllenge is how to send processed image back to client.
 
 ## Improvement
-We will try to implement AsyncTask and using multi-threading method to do multiple image processing in the same time.
+We will try to improve the performance of AsyncTask and using multi-threading method to do multiple image processing in the same time. 
 
 
 
