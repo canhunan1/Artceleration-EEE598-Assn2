@@ -3,7 +3,6 @@ package edu.asu.msrs.artcelerationlibrary;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,12 +13,13 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.util.Base64;
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class TransformService extends Service {
@@ -47,7 +47,11 @@ public class TransformService extends Service {
         public void handleMessage(Message msg) {
             //trasnformHelper(msg);
             replyTo = msg.replyTo;
-            new TransformService.AsyncTest().execute(getBitmap(msg));
+            try {
+                new AsyncTest().execute(getBitmap(msg));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -71,7 +75,12 @@ public class TransformService extends Service {
             default:
                 break;
         }
-        Bitmap mutableBitmap = getBitmap(msg);
+        Bitmap mutableBitmap = null;
+        try {
+            mutableBitmap = getBitmap(msg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mutableBitmap = testTransform(mutableBitmap);
         imageProcessed(mutableBitmap);
     }
@@ -80,13 +89,19 @@ public class TransformService extends Service {
     * @param msg
     * @return       the mutable bitmap so that it can be modified
     * */
-    private Bitmap getBitmap(Message msg) {
+    private Bitmap getBitmap(Message msg) throws IOException {
         Bundle dataBundle = msg.getData();
         ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
         InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
-        //convertInputStreamToBitmap
-        Bitmap img = BitmapFactory.decodeStream(istream);
-        return img.copy(Bitmap.Config.ARGB_8888, true);
+        //Convert the istream to bitmap
+        byte[] byteArray =  IOUtils.toByteArray(istream);
+        //The configuration is ARGB_8888, if the configuration changed in the application, here should be changed
+        // a better way is to pass the parameter through the message.
+        Bitmap.Config configBmp = Bitmap.Config.valueOf("ARGB_8888");
+        Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, configBmp);
+        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+        img.copyPixelsFromBuffer(buffer);
+        return img;
     }
     /*
     * This method is used to send the processed image back to the activity
@@ -94,9 +109,12 @@ public class TransformService extends Service {
     * @param img    the image which has been processed
     * */
     private void imageProcessed(Bitmap img){
-        Message msg = new Message();
-        msg.replyTo = replyTo;
+        int width = img.getWidth();
+        int height = img.getHeight();
         int what = 0;
+        Message msg = Message.obtain(null, what,width,height);
+        msg.replyTo = replyTo;
+
         //Message msg = Message.obtain(null, what);
         Bundle dataBundle = new Bundle();
         mClients.add(msg.replyTo);
@@ -104,14 +122,14 @@ public class TransformService extends Service {
             Log.d("mclient is ", "null");
         }
         try {
-            /*int bytes = img.getByteCount();
+            int bytes = img.getByteCount();
             ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
             img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-            byte[] byteArray = buffer.array();*/
+            byte[] byteArray = buffer.array();
 
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
             img.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
+            byte[] byteArray = stream.toByteArray();*/
             //Secondly, put the stream into the memory file.
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);

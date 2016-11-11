@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15,12 +14,13 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.util.Base64;
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Created by rlikamwa on 10/2/2016.
@@ -49,7 +49,17 @@ public class ArtLib {
                 Log.d("image ","has been sent back to the client");
                 InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
                 //convertInputStreamToBitmap
-                Bitmap img = BitmapFactory.decodeStream(istream);
+                byte[] byteArray = new byte[0];
+                try {
+                    byteArray = IOUtils.toByteArray(istream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Bitmap.Config configBmp = Bitmap.Config.valueOf("ARGB_8888");
+                Bitmap img = Bitmap.createBitmap(msg.arg1, msg.arg2, configBmp);
+                ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+                img.copyPixelsFromBuffer(buffer);
                 if (artlistener != null) {//triger the listener to send back the processed image to the activity
                     artlistener.onTransformProcessed(img);
                 }
@@ -109,16 +119,17 @@ public class ArtLib {
         try {
             //Write the image to the memory file
             //Firstly,convert bitmap to byte array
-            /*int  bytes = img.getByteCount();
+            //Without using compress, to speed up.
+            int width = img.getWidth();
+            int height = img.getHeight();
+            int  bytes = img.getByteCount();
             ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
             img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-            byte[] byteArray = buffer.array();*/
-            //byte[] encodeByteArray = Base64.encode(byteArray, Base64.DEFAULT);
+            byte[] byteArray = buffer.array();
 
-
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
             img.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
+            byte[] byteArray = stream.toByteArray();*/
             //Secondly, put the stream into the memory file.
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
@@ -131,7 +142,7 @@ public class ArtLib {
             dataBundle.putFloatArray("floatArgs", floatArgs);
             //index means the type of the transform.
             int what = index;
-            Message msg = Message.obtain(null, what);
+            Message msg = Message.obtain(null, what,width,height);
             msg.setData(dataBundle);
             msg.replyTo = inMessenger;
             try {
