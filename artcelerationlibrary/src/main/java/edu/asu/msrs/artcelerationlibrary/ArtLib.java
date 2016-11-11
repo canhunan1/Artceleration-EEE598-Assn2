@@ -15,11 +15,12 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.util.Base64;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 /**
  * Created by rlikamwa on 10/2/2016.
@@ -108,14 +109,16 @@ public class ArtLib {
         try {
             //Write the image to the memory file
             //Firstly,convert bitmap to byte array
-            int  bytes = img.getByteCount();
+            /*int  bytes = img.getByteCount();
             ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
             img.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-            byte[] byteArray = buffer.array();
+            byte[] byteArray = buffer.array();*/
+            //byte[] encodeByteArray = Base64.encode(byteArray, Base64.DEFAULT);
 
-            /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
             img.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();*/
+            byte[] byteArray = stream.toByteArray();
             //Secondly, put the stream into the memory file.
             MemoryFile memoryFile = new MemoryFile("someone", byteArray.length);
             memoryFile.writeBytes(byteArray, 0, 0, byteArray.length);
