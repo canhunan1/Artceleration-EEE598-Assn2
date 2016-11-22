@@ -3,7 +3,6 @@ package edu.asu.msrs.artcelerationlibrary;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,7 +24,7 @@ import java.util.ArrayList;
 public class TransformService extends Service {
 
     static {
-        System.loadLibrary("my-native-lib");
+        System.loadLibrary("native-lib");
     }
 
     static final int COLOR_FILTER = 0;
@@ -46,13 +45,15 @@ public class TransformService extends Service {
     class ArtTransformHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            //trasnformHelper(msg);
+            myStringFromJNI();
+
             replyTo = msg.replyTo;
-            try {
+            trasnformHelper(msg);
+           /* try {
                 new AsyncTest().execute(getBitmap(msg));
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
 
     }
@@ -155,7 +156,7 @@ public class TransformService extends Service {
     * @return img   processed image
     * */
     private Bitmap testTransform(Bitmap img) {
-        int width = img.getWidth();
+       /* int width = img.getWidth();
         int height = img.getHeight();
 
         for (int x = width / 4; x < width / 2; x++) {
@@ -167,7 +168,16 @@ public class TransformService extends Service {
 //                Log.d("the green value is ", String.valueOf(Color.green(thisColor)));
             }
         }
+        myStringFromJNI();
+        return img;*/
+
+        //JniTransform helper = new JniTransform();
+        //Log.d(TAG, myStringFromJNI());
         return img;
+        /*this.storeBitmap(img);
+        this.rotateBitmapCcw90();
+
+        return this.getBitmapAndFree();*/
     }
 
 
@@ -208,5 +218,83 @@ public class TransformService extends Service {
             Log.d("AsyncTest", "AsyncTest finished");
         }
     }
+
+    ByteBuffer _handler =null;
+    /*static
+    {
+        System.loadLibrary("my-native-lib");
+    }*/
+
+    private native ByteBuffer jniStoreBitmapData(Bitmap bitmap);
+
+    private native Bitmap jniGetBitmapFromStoredBitmapData(ByteBuffer handler);
+
+    private native void jniFreeBitmapData(ByteBuffer handler);
+
+    private native void jniRotateBitmapCcw90(ByteBuffer handler);
+
+    private native void jniCropBitmap(ByteBuffer handler,final int left,final int top,final int right,final int bottom);
+
+
+    /*public JniTransform(final Bitmap bitmap)
+    {
+        storeBitmap(bitmap);
+    }
+*/
+    public void storeBitmap(final Bitmap bitmap)
+    {
+        if(_handler!=null)
+            freeBitmap();
+        _handler=jniStoreBitmapData(bitmap);
+    }
+
+    public void rotateBitmapCcw90()
+    {
+        if(_handler==null)
+            return;
+        jniRotateBitmapCcw90(_handler);
+    }
+
+    public void cropBitmap(final int left,final int top,final int right,final int bottom)
+    {
+        if(_handler==null)
+            return;
+        jniCropBitmap(_handler,left,top,right,bottom);
+    }
+
+    public Bitmap getBitmap()
+    {
+        if(_handler==null)
+            return null;
+        return jniGetBitmapFromStoredBitmapData(_handler);
+    }
+
+    public Bitmap getBitmapAndFree()
+    {
+        final Bitmap bitmap=getBitmap();
+        freeBitmap();
+        return bitmap;
+    }
+
+    public void freeBitmap()
+    {
+        if(_handler==null)
+            return;
+        jniFreeBitmapData(_handler);
+        _handler=null;
+    }
+
+    @Override
+    protected void finalize() throws Throwable
+    {
+        super.finalize();
+        if(_handler==null)
+            return;
+        Log.w("DEBUG","JNI bitmap wasn't freed nicely.please rememeber to free the bitmap as soon as you can");
+        freeBitmap();
+    }
+
+
+
 
 }
