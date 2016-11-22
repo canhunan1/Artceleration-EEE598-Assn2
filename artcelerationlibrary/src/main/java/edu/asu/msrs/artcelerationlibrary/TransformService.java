@@ -114,8 +114,6 @@ public class TransformService extends Service {
     * */
     private void imageProcessed(Bitmap img) {
 
-        NativeTransform n = new NativeTransform();
-        n.nativeTest();
 
         int width = img.getWidth();
         int height = img.getHeight();
@@ -197,9 +195,14 @@ public class TransformService extends Service {
 //            ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
 //            return colorFilter.startTransform();
 
-            int[] inputParams = new int[]{0, 20};
+            /*int[] inputParams = new int[]{0, 20};
             MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
-            return motionBlur.startTransform();
+            return motionBlur.startTransform();*/
+
+            NativeTransform n = new NativeTransform();
+            Log.d("brightness",String.valueOf(n.brightness(img[0],(float)10.0)));
+            n.nativeTest();
+            return img[0];
 
             //return testTransform(img[0]);
         }
