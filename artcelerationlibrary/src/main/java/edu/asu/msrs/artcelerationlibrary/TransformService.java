@@ -27,6 +27,7 @@ public class TransformService extends Service {
     static {
         System.loadLibrary("my-native-lib");
     }
+
     static final int COLOR_FILTER = 0;
     static final int MOTION_BLUR = 1;
     static final int GAUSSIAN_BLUR = 2;
@@ -38,8 +39,8 @@ public class TransformService extends Service {
     static Messenger replyTo;
 
 
-    public TransformService() {}
-
+    public TransformService() {
+    }
 
 
     class ArtTransformHandler extends Handler {
@@ -55,6 +56,7 @@ public class TransformService extends Service {
         }
 
     }
+
     /*
     * This class is used to process the message got from the activity
     * @param msg get the message from the handler
@@ -84,6 +86,7 @@ public class TransformService extends Service {
         mutableBitmap = testTransform(mutableBitmap);
         imageProcessed(mutableBitmap);
     }
+
     /*
     * This method is to get the bitmap from the message
     * @param msg
@@ -94,7 +97,7 @@ public class TransformService extends Service {
         ParcelFileDescriptor pfd = (ParcelFileDescriptor) dataBundle.get("pfd");
         InputStream istream = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
         //Convert the istream to bitmap
-        byte[] byteArray =  IOUtils.toByteArray(istream);
+        byte[] byteArray = IOUtils.toByteArray(istream);
         //The configuration is ARGB_8888, if the configuration changed in the application, here should be changed
         // a better way is to pass the parameter through the message.
         Bitmap.Config configBmp = Bitmap.Config.valueOf("ARGB_8888");
@@ -103,16 +106,17 @@ public class TransformService extends Service {
         img.copyPixelsFromBuffer(buffer);
         return img;
     }
+
     /*
     * This method is used to send the processed image back to the activity
     * @param msg
     * @param img    the image which has been processed
     * */
-    private void imageProcessed(Bitmap img){
+    private void imageProcessed(Bitmap img) {
         int width = img.getWidth();
         int height = img.getHeight();
         int what = 0;
-        Message msg = Message.obtain(null, what,width,height);
+        Message msg = Message.obtain(null, what, width, height);
         msg.replyTo = replyTo;
 
         //Message msg = Message.obtain(null, what);
@@ -153,18 +157,18 @@ public class TransformService extends Service {
     private Bitmap testTransform(Bitmap img) {
         int width = img.getWidth();
         int height = img.getHeight();
-        for(int x = width/4; x < width/4*3; x++)
-        {
-            for(int y = height/4; y < height/4*3; y++)
-            {
-                img.setPixel(x, y, Color.YELLOW);
+
+        for (int x = width / 4; x < width / 2; x++) {
+            for (int y = height / 4; y < height / 2; y++) {
+                img.setPixel(x, y, Color.BLUE);
+//                int thisColor = img.getPixel(x, y);
+//                Log.d("the red value is ", String.valueOf(Color.red(thisColor)));
+//                Log.d("the blue value is ", String.valueOf(Color.blue(thisColor)));
+//                Log.d("the green value is ", String.valueOf(Color.green(thisColor)));
             }
         }
         return img;
     }
-
-
-
 
 
     final Messenger mMessenger = new Messenger(new ArtTransformHandler());
@@ -177,19 +181,31 @@ public class TransformService extends Service {
     public native static String myStringFromJNI();
     // public native static int JNI_OnLoad();
 
+
+
+
+
     class AsyncTest extends AsyncTask<Bitmap, Float, Bitmap> {
         //DONE IN BACKGROUND
 
         @Override
-        protected Bitmap doInBackground(Bitmap...img) {
-            return testTransform(img[0]);
+        protected Bitmap doInBackground(Bitmap... img) {
+//            int[] inputParams = new int[]{5, 26, 30, 80, 100, 150, 170, 230, 0, 68, 30, 10, 150, 150, 200, 30,100, 130, 130, 80, 200, 250, 240, 5};
+//            ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
+//            return colorFilter.startTransform();
+
+            int[] inputParams = new int[]{0, 20};
+            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
+            return motionBlur.startTransform();
+
+            //return testTransform(img[0]);
         }
 
         //ON UI THREAD
         protected void onPostExecute(Bitmap mutableBitmap) {
 
             imageProcessed(mutableBitmap);
-            Log.d("AsyncTest", "AsyncTest finished" );
+            Log.d("AsyncTest", "AsyncTest finished");
         }
     }
 
