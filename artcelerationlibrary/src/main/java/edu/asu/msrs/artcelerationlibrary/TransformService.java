@@ -24,9 +24,9 @@ import java.util.ArrayList;
 
 public class TransformService extends Service {
 
-    static {
+   /* static {
         System.loadLibrary("my-native-lib");
-    }
+    }*/
 
     static final int COLOR_FILTER = 0;
     static final int MOTION_BLUR = 1;
@@ -113,6 +113,10 @@ public class TransformService extends Service {
     * @param img    the image which has been processed
     * */
     private void imageProcessed(Bitmap img) {
+
+        NativeTransform n = new NativeTransform();
+        n.nativeTest();
+
         int width = img.getWidth();
         int height = img.getHeight();
         int what = 0;
@@ -178,7 +182,6 @@ public class TransformService extends Service {
         return mMessenger.getBinder();
     }
 
-    public native static String myStringFromJNI();
     // public native static int JNI_OnLoad();
 
 
