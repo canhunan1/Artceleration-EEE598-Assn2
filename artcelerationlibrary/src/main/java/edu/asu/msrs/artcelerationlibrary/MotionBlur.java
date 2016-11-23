@@ -9,7 +9,7 @@ import android.graphics.Color;
 
 public class MotionBlur {
     private Bitmap img;
-    private int[] inputParams;
+    private int[] inputParams=new int[2];
     private int width;
     private int height;
 
@@ -67,7 +67,7 @@ public class MotionBlur {
             int tmpColor = 0;
 
             for (int i = 0; i < 2*inputParams[1]+1; i++) {
-                if ((positionX - inputParams[1] + i) < 0 || (positionX - inputParams[1] + i) > height) {
+                if ((positionX - inputParams[1] + i) < 0 || (positionX - inputParams[1] + i) > width-1) {
                     tmpColor += 0;
                 } else {
                     tmpColor += pixelValue[color][positionX - inputParams[1] + i][positionY];
@@ -80,7 +80,7 @@ public class MotionBlur {
             int tmpColor = 0;
 
             for (int i = 0; i < 2*inputParams[1]+1; i++) {
-                if ((positionY - inputParams[1] + i) < 0 || (positionY - inputParams[1] + i) > width) {
+                if ((positionY - inputParams[1] + i) < 0 || (positionY - inputParams[1] + i) > height-1) {
                     tmpColor += 0;
                 } else {
                     tmpColor += pixelValue[color][positionX][positionY - inputParams[1] + i];

@@ -197,9 +197,13 @@ public class TransformService extends Service {
 //            ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
 //            return colorFilter.startTransform();
 
-            int[] inputParams = new int[]{0, 20};
-            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
-            return motionBlur.startTransform();
+//            int[] inputParams = new int[]{0, 20};
+//            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
+//            return motionBlur.startTransform();
+
+            int inputParams=3;
+            SobelEdgeFilter sobelEdgeFilter=new SobelEdgeFilter(img[0],inputParams);
+            return sobelEdgeFilter.startTransform();
 
             //return testTransform(img[0]);
         }
