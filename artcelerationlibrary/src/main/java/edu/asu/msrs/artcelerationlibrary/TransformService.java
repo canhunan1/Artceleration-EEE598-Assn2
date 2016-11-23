@@ -204,9 +204,9 @@ public class TransformService extends Service {
             ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
             return colorFilter.startTransform();
 
-            int[] inputParams = new int[]{0, 20};
-            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
-            return motionBlur.startTransform();
+//            int[] inputParams = new int[]{0, 20};
+//            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
+//            return motionBlur.startTransform();
 
             //return testTransform(img[0]);
         }
