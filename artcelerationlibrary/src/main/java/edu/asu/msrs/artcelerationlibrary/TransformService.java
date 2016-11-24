@@ -201,9 +201,14 @@ public class TransformService extends Service {
 //            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
 //            return motionBlur.startTransform();
 
-            int inputParams=3;
-            SobelEdgeFilter sobelEdgeFilter=new SobelEdgeFilter(img[0],inputParams);
-            return sobelEdgeFilter.startTransform();
+//            int inputParams=3;
+//            SobelEdgeFilter sobelEdgeFilter=new SobelEdgeFilter(img[0],inputParams);
+//            return sobelEdgeFilter.startTransform();
+
+            int[] inputInt = new int[]{20};
+            float[] inputFloat= new float[]{12.0f};
+            GaussianBlur gaussianBlur=new GaussianBlur(img[0], inputInt,inputFloat);
+            return gaussianBlur.startTransform();
 
             //return testTransform(img[0]);
         }

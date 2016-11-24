@@ -44,7 +44,7 @@ public class SobelEdgeFilter {
 
         int width = img.getWidth();
         int height = img.getHeight();
-        int[] inputParamsRed = new int[8];
+        //int[] inputParamsRed = new int[8];
 
         for (int x = 0 * width / 4; x < width / 2 * 2; x++) {
 
