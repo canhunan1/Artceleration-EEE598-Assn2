@@ -30,9 +30,9 @@ public class ColorFilter {
         for(int i=0;i<8;i++){inputParamsBlue[i]=inputParams[i+16];}
 
 
-        for (int x = 0 * width / 4; x < width / 2 * 2; x++) {
+        for (int x = 0 ; x < width; x++) {
 
-            for (int y = 0 * height / 4; y < height / 2 * 2; y++) {
+            for (int y = 0; y < height; y++) {
 
                 int colorOfPixel = img.getPixel(x, y);
                 int redPart = Color.red(colorOfPixel);
@@ -41,8 +41,8 @@ public class ColorFilter {
                 greenPart = algo_ColorFilter(greenPart, inputParamsGreen);
                 int bluePart = Color.blue(colorOfPixel);
                 bluePart = algo_ColorFilter(bluePart, inputParamsBlue);
-                colorOfPixel = Color.argb(255, redPart, greenPart, bluePart);
-                img.setPixel(x, y, colorOfPixel);
+                //colorOfPixel = Color.argb(255, redPart, greenPart, bluePart);
+                img.setPixel(x, y, Color.argb(255, redPart, greenPart, bluePart));
 
             }
 

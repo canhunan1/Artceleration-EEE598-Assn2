@@ -191,18 +191,24 @@ public class TransformService extends Service {
 
         @Override
         protected Bitmap doInBackground(Bitmap... img) {
-//            int[] inputParams = new int[]{5, 26, 30, 80, 100, 150, 170, 230, 0, 68, 30, 10, 150, 150, 200, 30,100, 130, 130, 80, 200, 250, 240, 5};
-//            ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
-//            return colorFilter.startTransform();
+            int[] inputParams = new int[]{5, 26, 30, 80, 100, 150, 170, 230, 0, 68, 30, 10, 150, 150, 200, 30,100, 130, 130, 80, 200, 250, 240, 5};
+            ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
+           // return colorFilter.startTransform();
 
             /*int[] inputParams = new int[]{0, 20};
             MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
             return motionBlur.startTransform();*/
 
-            NativeTransform n = new NativeTransform();
-            Log.d("brightness",String.valueOf(n.brightness(img[0],(float)10.0)));
-            n.nativeTest();
-            return img[0];
+            NativeTransform n = new NativeTransform(img[0]);
+            //n.cropBitmap(10,10,1000,1000);
+            //n.rotateBitmapCcw90();
+           // n.brightness((float)1.3);
+            int[] args = {5, 26, 30, 80, 100, 150, 170, 230, 0, 68, 30, 10, 150, 150, 200, 30,100, 130, 130, 80, 200, 250, 240, 5};
+            n.colorFilter(args);
+
+            //Log.d("brightness",String.valueOf();
+            //n.nativeTest();
+            return n.getBitmapAndFree();
 
             //return testTransform(img[0]);
         }

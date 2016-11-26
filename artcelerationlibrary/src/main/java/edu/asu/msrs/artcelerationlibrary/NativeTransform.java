@@ -32,8 +32,8 @@ public class NativeTransform {
 
     private native void jniCropBitmap(ByteBuffer handler,final int left,final int top,final int right,final int bottom);
 
-    private native void jniColorFilter(ByteBuffer handler);
-    public native boolean brightness(Bitmap bmp, float brightness);
+    private native void jniColorFilter(ByteBuffer handler,int[] args, int size);
+    private native boolean brightness(ByteBuffer handler,float brightness);
 
     public NativeTransform(){
 
@@ -54,15 +54,40 @@ public class NativeTransform {
     {
         if(_handler==null)
             return;
-        jniColorFilter(_handler);
+        jniRotateBitmapCcw90(_handler);
     }
 
-    public void colorFilter()
+    public void brightness(float brightness)
     {
         if(_handler==null)
             return;
-        jniRotateBitmapCcw90(_handler);
+        brightness(_handler, brightness);
     }
+
+    public boolean colorFilter(int[] args)
+    {
+        if(_handler==null)
+            return false;
+       /* if(!colorFilterValidateArgs(args)){
+            return false;
+        }*/
+        jniColorFilter(_handler, args, args.length);
+        return true;
+    }
+    private boolean colorFilterValidateArgs(int args[]){
+        if(args == null || args.length!=24 )
+            return false;
+        for(int i = 0; i<args.length; i++){
+            if(Math.floor(i/4)%2==0&&(i+1)%4!=0){
+                if(args[i]>args[i+1])
+                    return false;
+            }
+            if( args[i]<0 )
+                return false;
+        }
+        return true;
+    }
+
 
     public void cropBitmap(final int left,final int top,final int right,final int bottom)
     {
