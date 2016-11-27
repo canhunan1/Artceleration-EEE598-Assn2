@@ -113,7 +113,8 @@ public class TransformService extends Service {
     * @param img    the image which has been processed
     * */
     private void imageProcessed(Bitmap img) {
-
+        if(img == null)
+            return;
 
         int width = img.getWidth();
         int height = img.getHeight();
@@ -196,7 +197,7 @@ public class TransformService extends Service {
 
 
             ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
-            colorFilter.startTransform();
+           // colorFilter.startTransform();
             long endTime   = System.currentTimeMillis();
             long totalTime = endTime - startTime;
             Log.d("TimeTest " , "java is "+String.valueOf(totalTime));

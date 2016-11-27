@@ -14,11 +14,12 @@ public class NativeTransform {
         System.loadLibrary("native-lib");
     }
     public void nativeTest(){
-        Log.d("Success",myStringFromJNI());
+        Log.d("Success",stringFromJNI());
     }
 
     //Log.d(TAG,myStringFromJNI());
     public native static String myStringFromJNI();
+    public native static String stringFromJNI();
 
     ByteBuffer _handler =null;
 
@@ -71,6 +72,7 @@ public class NativeTransform {
        /* if(!colorFilterValidateArgs(args)){
             return false;
         }*/
+        nativeTest();
         jniColorFilter(_handler, args, args.length);
         return true;
     }
