@@ -10,6 +10,9 @@
 #include <cstring>
 #include <unistd.h>
 #include <string>
+#include <cpu-features.h>
+//#include <arm_neon.h>
+#include "neon-intrinsics.h"
 
 #define  LOG_TAG    "DEBUG"
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
@@ -18,7 +21,7 @@ static uint32_t rgb_clamp(uint32_t value);
 static uint32_t monoColorFilter(uint32_t monoColor, uint32_t args[]);
 extern "C"
 {
-JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject /* this */);
+JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject  /*this*/ );
 JNIEXPORT jobject JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniStoreBitmapData(JNIEnv * env, jobject obj, jobject bitmap);
 JNIEXPORT jobject JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniGetBitmapFromStoredBitmapData(JNIEnv * env, jobject obj, jobject handle);
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniFreeBitmapData(JNIEnv * env, jobject obj, jobject handle);
@@ -28,11 +31,35 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jn
 JNIEXPORT jboolean JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_brightness(JNIEnv * env, jobject  obj, jobject handle,jfloat brightnessValue);
 
 }
+#ifdef __cplusplus /* If this is a C++ compiler, use C linkage */
+extern "C" {
+#endif
+//void fir_filter_neon_intrinsics(short *output, const short* input, const short* kernel, int width, int kernelSize);
 
+#ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
+}
+#endif
 
+#define  FIR_KERNEL_SIZE   32
+#define  FIR_OUTPUT_SIZE   2560
+#define  FIR_INPUT_SIZE    (FIR_OUTPUT_SIZE + FIR_KERNEL_SIZE)
+#define  FIR_ITERATIONS    600
+
+static const short fir_kernel[FIR_KERNEL_SIZE] = {
+        0x10, 0x20, 0x40, 0x70, 0x8c, 0xa2, 0xce, 0xf0, 0xe9, 0xce, 0xa2, 0x8c, 070, 0x40, 0x20,
+        0x10,
+        0x10, 0x20, 0x40, 0x70, 0x8c, 0xa2, 0xce, 0xf0, 0xe9, 0xce, 0xa2, 0x8c, 070, 0x40, 0x20,
+        0x10};
+
+static short fir_output[FIR_OUTPUT_SIZE];
+static short fir_input_0[FIR_INPUT_SIZE];
+static const short *fir_input = fir_input_0 + (FIR_KERNEL_SIZE / 2);
 
 JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject /* this */)
 {
+    //fir_filter_neon_intrinsics(fir_output, fir_input, fir_kernel, FIR_OUTPUT_SIZE, FIR_KERNEL_SIZE);
+    //int16x4_t  input_vec = vld1_s16(fir_input);
+
     std::string hello = "Hello";
     return env->NewStringUTF(hello.c_str());
 }

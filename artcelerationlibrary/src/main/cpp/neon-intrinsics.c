@@ -46,3 +46,7 @@ fir_filter_neon_intrinsics(short *output, const short* input, const short* kerne
     }
 #endif
 }
+
+void color_filter_neon_intrinsics(short *output, const short* input, const short* kernel, int width, int kernelSize){
+
+}
