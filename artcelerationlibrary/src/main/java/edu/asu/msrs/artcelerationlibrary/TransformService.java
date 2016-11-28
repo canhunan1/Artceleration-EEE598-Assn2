@@ -215,7 +215,7 @@ public class TransformService extends Service {
            // n.brightness((float)1.3);
             //int[] args = {5, 26, 30, 80, 100, 150, 170, 230, 0, 68, 30, 10, 150, 150, 200, 30,100, 130, 130, 80, 200, 250, 240, 5};
             //n.colorFilter(args);
-            n.bright(img[0],(float)1.5);
+            n.motionBlur(img[0],(float)1.5);
              //endTime   = System.currentTimeMillis();
              //totalTime = endTime - startTime;
             //Log.d("TimeTest " , "native is"+String.valueOf(totalTime));

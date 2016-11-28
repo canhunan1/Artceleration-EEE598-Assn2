@@ -169,6 +169,7 @@ Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_stringFromJNI(JNIEnv *env
     EXIT:
     return (*env)->NewStringUTF(env, buffer);
 }
+void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius);
 
 
 #define  LOG_TAG    "libimageprocessing"
@@ -235,4 +236,148 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_ne
 
     brightness(&info,pixels, brightnessValue);
     AndroidBitmap_unlockPixels(env, bitmap);
+}
+
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue)
+{
+
+    AndroidBitmapInfo  info;
+    int ret;
+    void* pixels;
+    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        LOGE("Bitmap format is not RGBA_8888 !");
+        return;
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    //brightness(&info,pixels, brightnessValue);
+    motionBlur(&info,(uint32_t*)pixels, 1, 20);
+    AndroidBitmap_unlockPixels(env, bitmap);
+}
+
+void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius){
+    uint32_t  width = info->width;
+    uint32_t height = info->height;
+    uint32_t* line;
+    int pixelsCount = width * height;
+    uint32_t* ori=  malloc(sizeof(uint32_t) *pixelsCount);
+    memcpy(ori, pixels, sizeof(uint32_t) * pixelsCount);
+    if(dir == 0){// horizontal blur
+        for( int i = 0; i < info->height; i++){
+            line = (uint32_t*) pixels;
+            uint32_t sumRed = 0;
+            uint32_t sumGreen = 0;
+            uint32_t sumBlue = 0;
+            for(int j = 0; j<2*radius+1;j++){
+                sumRed +=  (uint32_t)(( line[j] & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( line[j] & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( line[j] & 0x000000FF );
+                if(radius<=j){
+                    uint32_t  red = (sumRed/(j+1));
+                    uint32_t  green = (sumGreen/(j+1));
+                    uint32_t  blue = (sumBlue/(j+1));
+                    line[j-radius] = (0xFF000000)|
+                              ((red << 16) & 0x00FF0000) |
+                              ((green << 8) & 0x0000FF00) |
+                              (blue & 0x000000FF);
+                   /* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
+                    //LOGE("  sum green = %d", sumGreen);
+                    LOGE("%d blue = %d", j-radius,(line[j-radius]& 0x000000FF));
+                    //LOGE("   sum blue = %d", sumBlue);*/
+                }
+
+                /*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
+                LOGE("  sum green = %d", sumGreen);
+                LOGE("%d blue = %d", j,(line[j]& 0x000000FF));
+                LOGE("   sum blue = %d", sumBlue);*/
+
+            }
+            for(int j =radius + 1; j <  info->width-radius; j++){
+                //extract the RGB values from the pixel
+                uint32_t pixelRight =  line[ j + radius];
+                uint32_t pixelLeft = line[ j - radius - 1];// should use ori but have bug here
+                sumRed +=  (uint32_t)(( pixelRight & 0x00FF0000) >> 16) - (uint32_t)(( pixelLeft & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( pixelRight & 0x0000FF00) >> 8) - (uint32_t)(( pixelLeft & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( pixelRight & 0x000000FF ) - (uint32_t)(( pixelLeft & 0x000000FF));
+                uint32_t  red = (sumRed/(2*radius+1));
+                uint32_t  green = (sumGreen/(2*radius+1));
+                uint32_t  blue = (sumBlue/(2*radius+1));
+                // set the new pixel back in
+               /* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
+                LOGE("   sum green = %d", sumGreen);
+                LOGE("   aver green = %d", green);
+                LOGE("%d blue = %d", j,(ori[j]& 0x000000FF));
+                LOGE("   sum blue = %d", sumBlue);
+                LOGE("   aver blue = %d", blue);*/
+                line[j] = (0xFF000000)|
+                           ((red << 16) & 0x00FF0000) |
+                           ((green << 8) & 0x0000FF00) |
+                           (blue & 0x000000FF);
+            }
+            pixels = (uint32_t*)((char*)pixels + info->stride);
+        }
+    }else{// vertical blur
+        for( int i = 0; i < width; i++){
+            //line = (uint32_t*) pixels;
+            uint32_t sumRed = 0;
+            uint32_t sumGreen = 0;
+            uint32_t sumBlue = 0;
+            for(int j = 0; j<2*radius+1;j++){
+                sumRed +=  (uint32_t)(( pixels[j*width+i] & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( pixels[j*width+i] & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( pixels[j*width+i] & 0x000000FF );
+                if(radius<=j){
+                    uint32_t  red = (sumRed/(j+1));
+                    uint32_t  green = (sumGreen/(j+1));
+                    uint32_t  blue = (sumBlue/(j+1));
+                    pixels[(j-radius)*width+i] = (0xFF000000)|
+                                     ((red << 16) & 0x00FF0000) |
+                                     ((green << 8) & 0x0000FF00) |
+                                     (blue & 0x000000FF);
+                    /* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
+                     //LOGE("  sum green = %d", sumGreen);
+                     LOGE("%d blue = %d", j-radius,(line[j-radius]& 0x000000FF));
+                     //LOGE("   sum blue = %d", sumBlue);*/
+                }
+
+                /*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
+                LOGE("  sum green = %d", sumGreen);
+                LOGE("%d blue = %d", j,(line[j]& 0x000000FF));
+                LOGE("   sum blue = %d", sumBlue);*/
+
+            }
+            for(int j =radius + 1; j <  height-radius; j++){
+                //extract the RGB values from the pixel
+                uint32_t pixelRight =  pixels[ (j+ radius)*width+i ];
+                uint32_t pixelLeft = pixels[ (j- radius - 1)*width+i ];// should use ori but have bug here
+                sumRed +=  (uint32_t)(( pixelRight & 0x00FF0000) >> 16) - (uint32_t)(( pixelLeft & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( pixelRight & 0x0000FF00) >> 8) - (uint32_t)(( pixelLeft & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( pixelRight & 0x000000FF ) - (uint32_t)(( pixelLeft & 0x000000FF));
+                uint32_t  red = (sumRed/(2*radius+1));
+                uint32_t  green = (sumGreen/(2*radius+1));
+                uint32_t  blue = (sumBlue/(2*radius+1));
+                // set the new pixel back in
+                /* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
+                 LOGE("   sum green = %d", sumGreen);
+                 LOGE("   aver green = %d", green);
+                 LOGE("%d blue = %d", j,(ori[j]& 0x000000FF));
+                 LOGE("   sum blue = %d", sumBlue);
+                 LOGE("   aver blue = %d", blue);*/
+                pixels[j*width+i] = (0xFF000000)|
+                          ((red << 16) & 0x00FF0000) |
+                          ((green << 8) & 0x0000FF00) |
+                          (blue & 0x000000FF);
+            }
+            //pixels = (char*)pixels + sizeof(uint32_t)*width;
+        }
+    }
+
+    free(ori);
 }

@@ -36,6 +36,8 @@ public class NativeTransform {
     private native void jniColorFilter(ByteBuffer handler,int[] args, int size);
     private native boolean brightness(ByteBuffer handler,float brightness);
     private native boolean neonBrightness(Bitmap img,float brightness);
+    private native boolean neonMotionBlur(Bitmap img,float brightness);
+
 
     public NativeTransform(){
 
@@ -71,6 +73,13 @@ public class NativeTransform {
         Log.d("native bright","dd");
 
         neonBrightness(img, brightness);
+    }
+
+    public void motionBlur(Bitmap img, float brightness)
+    {
+        Log.d("native motion blur","dd");
+
+        neonMotionBlur( img,brightness);
     }
 
     public boolean colorFilter(int[] args)
