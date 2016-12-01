@@ -13,8 +13,7 @@ public class SobelEdgeFilter {
     private int inputParams;
     private int width;
     private int height;
-
-    private int[][][] pixelValue;
+    private int [][] qArray;
 
     int[][] Sx=new int[][]{{-1,0,1}, {-2,0,2},{-1,0,1}};
     int[][] Sy=new int[][]{{-1,-2,-1},{0,0,0},{1,2,1}};
@@ -25,145 +24,80 @@ public class SobelEdgeFilter {
         this.inputParams = inputParams;
         this.width = img.getWidth();
         this.height = img.getHeight();
-        this.pixelValue = new int[3][width][height]; //0 red, 1 green, 2 blue
-
-        for (int x = 0 * width / 4; x < width / 2 * 2; x++) {
-            for (int y = 0 * height / 4; y < height / 2 * 2; y++) {
-
+        this.qArray = new int[width][height]; //0 red, 1 green, 2 blue
+        for (int x = 0 ; x < width ; x++) {
+            for (int y = 0 ; y < height ; y++) {
                 int colorOfPixel = img.getPixel(x, y);
-
-                pixelValue[0][x][y] = (int) (0.2989 * Color.red(colorOfPixel));
-                pixelValue[1][x][y] = (int) (0.5870 * Color.green(colorOfPixel));
-                pixelValue[2][x][y] = (int) (0.1140 * Color.blue(colorOfPixel));
+                int q = (int) (0.2989 * (float)Color.red(colorOfPixel))+ (int) (0.5870 * (float)Color.green(colorOfPixel))+(int) (0.1140 * (float)Color.blue(colorOfPixel));
+                qArray[x][y] = q;
             }
         }
     }
-
-
     public Bitmap startTransform() {
 
         int width = img.getWidth();
         int height = img.getHeight();
-        //int[] inputParamsRed = new int[8];
-
-        for (int x = 0 * width / 4; x < width / 2 * 2; x++) {
-
-            for (int y = 0 * height / 4; y < height / 2 * 2; y++) {
-
-                int redPart = algo_SobelEdgeFilter(inputParams,0,x,y);
-                int greenPart = algo_SobelEdgeFilter(inputParams,1,x,y);
-                int bluePart = algo_SobelEdgeFilter(inputParams,2,x,y);
-                int colorOfPixel = Color.argb(255, redPart, greenPart, bluePart);
-
+        for (int x = 0; x < width ; x++) {
+            for (int y = 0 ; y < height ; y++) {
+                int q = algo_SobelEdgeFilter(inputParams,x,y);
+                int colorOfPixel = Color.argb(255, q, q, q);
                 img.setPixel(x, y, colorOfPixel);
-
             }
-
         }
         return img;
     }
 
-    private int algo_SobelEdgeFilter(int inputParams, int color, int positionX, int positionY) {
+    private int algo_SobelEdgeFilter(int inputParams,  int positionX, int positionY) {
 
         int outputColor=0;
-
         //BEGIN OF PIXEL MATRIX INTITIALIZATION
         int[][] colorMatrix= new int[3][3];
-
-        if(positionX-1>=0 && positionY-1>=0){
-            colorMatrix[0][0]=pixelValue[color][positionX-1][positionY-1];
-        }else{
-            colorMatrix[0][0]=0;
+        for(int i = -1; i<2;i++) {
+            for (int j = -1; j < 2; j++){
+                if (positionX + i >= 0 && positionY + j >= 0 && positionX + i < width && positionY + j < height) {
+                    colorMatrix[i+1][j+1] = qArray[positionX + i][positionY + j];
+                } else {
+                    colorMatrix[i+1][j+1] = 0;
+                }
+            }
         }
 
-        if(positionX-1>=0){
-            colorMatrix[1][0]=pixelValue[color][positionX-1][positionY];
-        }else{
-            colorMatrix[1][0]=0;
-        }
-
-        if(positionX-1>=0 && positionY+1<height){
-            colorMatrix[2][0]=pixelValue[color][positionX-1][positionY+1];
-        }else{
-            colorMatrix[2][0]=0;
-        }
-
-        if(positionY-1>=0){
-            colorMatrix[0][1]=pixelValue[color][positionX][positionY-1];
-        }else{
-            colorMatrix[0][1]=0;
-        }
-
-        colorMatrix[1][1]=pixelValue[color][positionX][positionY];
-
-        if(positionY+1<height){
-            colorMatrix[2][1]=pixelValue[color][positionX][positionY+1];
-        }else{
-            colorMatrix[2][1]=0;
-        }
-
-        if(positionX+1<width && positionY-1>=0){
-            colorMatrix[0][2]=pixelValue[color][positionX+1][positionY-1];
-        }else{
-            colorMatrix[0][2]=0;
-        }
-
-        if(positionX+1<width){
-            colorMatrix[1][2]=pixelValue[color][positionX+1][positionY];
-        }else{
-            colorMatrix[1][2]=0;
-        }
-
-        if(positionX+1<width && positionY+1<height){
-            colorMatrix[2][2]=pixelValue[color][positionX+1][positionY+1];
-        }else{
-            colorMatrix[2][2]=0;
-        }
         //END OF PIXEL MATRIX INITIALIZATION
 
         if (inputParams == 0) {
-
-            int Grx=colorMatrix[0][0]*Sx[0][0]+colorMatrix[0][1]*Sx[0][1]+colorMatrix[0][2]*Sx[0][2]
-                    +colorMatrix[1][0]*Sx[1][0]+colorMatrix[1][1]*Sx[1][1]+colorMatrix[1][2]*Sx[1][2]
-                    +colorMatrix[2][0]*Sx[2][0]+colorMatrix[2][1]*Sx[2][1]+colorMatrix[2][2]*Sx[2][2];
+            int Grx= getGrx(colorMatrix);
             if(Grx<0){
                 outputColor=0;
             }else{
                 outputColor=Grx;
             }
-
-
         } else if (inputParams == 1) {
-
-            int Gry=colorMatrix[0][0]*Sy[0][0]+colorMatrix[0][1]*Sy[0][1]+colorMatrix[0][2]*Sy[0][2]
-                    +colorMatrix[1][0]*Sy[1][0]+colorMatrix[1][1]*Sy[1][1]+colorMatrix[1][2]*Sy[1][2]
-                    +colorMatrix[2][0]*Sy[2][0]+colorMatrix[2][1]*Sy[2][1]+colorMatrix[2][2]*Sy[2][2];
+            int Gry= getGry(colorMatrix);
             if(Gry<0){
                 outputColor=0;
             }else{
                 outputColor=Gry;
             }
-
-
         }else if (inputParams == 3){
-
-            int Grx=colorMatrix[0][0]*Sx[0][0]+colorMatrix[0][1]*Sx[0][1]+colorMatrix[0][2]*Sx[0][2]
-                    +colorMatrix[1][0]*Sx[1][0]+colorMatrix[1][1]*Sx[1][1]+colorMatrix[1][2]*Sx[1][2]
-                    +colorMatrix[2][0]*Sx[2][0]+colorMatrix[2][1]*Sx[2][1]+colorMatrix[2][2]*Sx[2][2];
-
-            int Gry=colorMatrix[0][0]*Sy[0][0]+colorMatrix[0][1]*Sy[0][1]+colorMatrix[0][2]*Sy[0][2]
-                    +colorMatrix[1][0]*Sy[1][0]+colorMatrix[1][1]*Sy[1][1]+colorMatrix[1][2]*Sy[1][2]
-                    +colorMatrix[2][0]*Sy[2][0]+colorMatrix[2][1]*Sy[2][1]+colorMatrix[2][2]*Sy[2][2];
+            int Grx= getGrx(colorMatrix);
+            int Gry= getGry(colorMatrix);
             int Gr=(int)Math.sqrt(Grx*Grx+Gry*Gry);
-
             outputColor=Gr;
-
-
-
         } else {
             outputColor = 255;
         }
-
         return outputColor;
+    }
+
+    private int getGry(int[][] colorMatrix) {
+        return colorMatrix[0][0]*Sy[0][0]+colorMatrix[0][1]*Sy[0][1]+colorMatrix[0][2]*Sy[0][2]
+                +colorMatrix[1][0]*Sy[1][0]+colorMatrix[1][1]*Sy[1][1]+colorMatrix[1][2]*Sy[1][2]
+                +colorMatrix[2][0]*Sy[2][0]+colorMatrix[2][1]*Sy[2][1]+colorMatrix[2][2]*Sy[2][2];
+    }
+
+    private int getGrx(int[][] colorMatrix) {
+        return colorMatrix[0][0]*Sx[0][0]+colorMatrix[0][1]*Sx[0][1]+colorMatrix[0][2]*Sx[0][2]
+                +colorMatrix[1][0]*Sx[1][0]+colorMatrix[1][1]*Sx[1][1]+colorMatrix[1][2]*Sx[1][2]
+                +colorMatrix[2][0]*Sx[2][0]+colorMatrix[2][1]*Sx[2][1]+colorMatrix[2][2]*Sx[2][2];
     }
 }
