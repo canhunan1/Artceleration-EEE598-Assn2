@@ -19,6 +19,7 @@
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 static uint32_t rgb_clamp(uint32_t value);
 static uint32_t monoColorFilter(uint32_t monoColor, uint32_t args[]);
+int algo_ColorFilter(int inputColor, int inputParams[]);
 extern "C"
 {
 JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject  /*this*/ );
@@ -155,9 +156,9 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jn
             blue =  (uint32_t)(line[xx] & 0x000000FF );
 
            //manipulate each value
-            red = monoColorFilter(red,(uint32_t*)inCArray);
-            green = monoColorFilter(green,(uint32_t*)(inCArray+8));
-            blue = monoColorFilter(blue,(uint32_t*)(inCArray+16));
+            red = (uint32_t) algo_ColorFilter(red,inCArray);
+            green = (uint32_t) algo_ColorFilter(green,(inCArray+8));
+            blue = (uint32_t)algo_ColorFilter(blue,(inCArray+16));
 
             // set the new pixel back in
             line[xx]=
@@ -173,6 +174,89 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jn
     jniBitmap->_bitmapInfo.width = info.width;
     jniBitmap->_bitmapInfo.height = info.height;
 }
+int algo_ColorFilter(int inputColor, int inputParams[]) {
+    if (inputParams[0] != 0 && inputParams[6] != 255) {
+        if (inputColor < inputParams[0]) {
+
+            inputColor = inputParams[1] / inputParams[0] * inputColor;
+
+        } else if (inputColor >= inputParams[0] && inputColor < inputParams[2]) {
+
+            inputColor = (inputParams[3] - inputParams[1]) / (inputParams[2] - inputParams[0]) * (inputColor - inputParams[0]) + inputParams[1];
+
+        } else if (inputColor >= inputParams[2] && inputColor < inputParams[4]) {
+
+            inputColor = (inputParams[5] - inputParams[3]) / (inputParams[4] - inputParams[2]) * (inputColor - inputParams[2]) + inputParams[3];
+
+        } else if (inputColor >= inputParams[4] && inputColor < inputParams[6]) {
+
+            inputColor = (inputParams[7] - inputParams[5]) / (inputParams[6] - inputParams[4]) * (inputColor - inputParams[4]) + inputParams[5];
+
+        } else {
+
+            inputColor = (255 - inputParams[7]) / (255 - inputParams[6]) * (inputColor - inputParams[6]) + inputParams[7];
+        }
+
+    } else if (inputParams[0] == 0 && inputParams[6] != 255) {
+
+        if (inputColor >= inputParams[0] && inputColor < inputParams[2]) {
+
+            inputColor = (inputParams[3] - inputParams[1]) / (inputParams[2] - inputParams[0]) * (inputColor - inputParams[0]) + inputParams[1];
+
+        } else if (inputColor >= inputParams[2] && inputColor < inputParams[4]) {
+
+            inputColor = (inputParams[5] - inputParams[3]) / (inputParams[4] - inputParams[2]) * (inputColor - inputParams[2]) + inputParams[3];
+
+        } else if (inputColor >= inputParams[4] && inputColor < inputParams[6]) {
+
+            inputColor = (inputParams[7] - inputParams[5]) / (inputParams[6] - inputParams[4]) * (inputColor - inputParams[4]) + inputParams[5];
+
+        } else {
+
+            inputColor = (255 - inputParams[7]) / (255 - inputParams[6]) * (inputColor - inputParams[6]) + inputParams[7];
+        }
+
+    } else if (inputParams[0] != 0) {
+
+        if (inputColor < inputParams[0]) {
+
+            inputColor = inputParams[1] / inputParams[0] * inputColor;
+
+        } else if (inputColor >= inputParams[0] && inputColor < inputParams[2]) {
+
+            inputColor = (inputParams[3] - inputParams[1]) / (inputParams[2] - inputParams[0]) * (inputColor - inputParams[0]) + inputParams[1];
+
+        } else if (inputColor >= inputParams[2] && inputColor < inputParams[4]) {
+
+            inputColor = (inputParams[5] - inputParams[3]) / (inputParams[4] - inputParams[2]) * (inputColor - inputParams[2]) + inputParams[3];
+
+        } else if (inputColor >= inputParams[4] && inputColor <= 255) {
+
+            inputColor = (inputParams[7] - inputParams[5]) / (255 - inputParams[4]) * (inputColor - inputParams[4]) + inputParams[5];
+
+        }
+
+    } else {
+
+        if (inputColor >= inputParams[0] && inputColor < inputParams[2]) {
+
+            inputColor = (inputParams[3] - inputParams[1]) / (inputParams[2] - inputParams[0]) * (inputColor - inputParams[0]) + inputParams[1];
+
+        } else if (inputColor >= inputParams[2] && inputColor < inputParams[4]) {
+
+            inputColor = (inputParams[5] - inputParams[3]) / (inputParams[4] - inputParams[2]) * (inputColor - inputParams[2]) + inputParams[3];
+
+        } else if (inputColor >= inputParams[4] && inputColor < 255) {
+
+            inputColor = (inputParams[7] - inputParams[5]) / (255 - inputParams[4]) * (inputColor - inputParams[4]) + inputParams[5];
+
+        }
+
+    }
+
+    return inputColor;
+}
+
 uint32_t monoColorFilter(uint32_t monoColor, uint32_t args[]) {
     // the size of the args should be
     if(args[0]>0 && monoColor<=args[0])
@@ -344,6 +428,7 @@ static void brightness(AndroidBitmapInfo* info, void* pixels, float brightnessVa
         pixels = (char*)pixels + info->stride;
     }
 }
+
 
 
 JNIEXPORT jboolean JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_brightness(JNIEnv * env, jobject  obj, jobject handle, jfloat brightnessValue)
