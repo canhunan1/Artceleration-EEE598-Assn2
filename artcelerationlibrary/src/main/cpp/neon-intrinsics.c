@@ -3,10 +3,14 @@
 #include <malloc.h>
 #include <string.h>
 #include <android/bitmap.h>
+#include <android/log.h>
 
+#define  LOG_TAG    "DEBUG"
+#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 /* this source file should only be compiled by Android.mk /CMake when targeting
  * the armeabi-v7a ABI, and should be built in NEON mode
  */
+
 void
 fir_filter_neon_intrinsics(short *output, const short* input, const short* kernel, int width, int kernelSize)
 {
@@ -177,4 +181,51 @@ void neonMotionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int rad
     }
 
     free(ori);
+}
+
+void neonNeonEdgeLinearSum(AndroidBitmapInfo* infoOri, uint32_t * pixelsOri,AndroidBitmapInfo* infoProcessed, uint32_t * pixelsProcessed,float f1,float f2){
+    uint32_t  width = infoOri->width;
+    uint32_t  height = infoOri->height;
+    uint32x4_t redFactor = vdupq_n_u32(0x00FF0000);
+    uint32x4_t greenFactor = vdupq_n_u32(0x0000FF00);
+    uint32x4_t blueFactor = vdupq_n_u32(0x000000FF);
+    float32x4_t f1V =  vmovq_n_f32((float32_t)f1);
+    float32x4_t f2V =  vmovq_n_f32((float32_t)f2);
+    uint32_t* linePro;
+    uint32_t* lineOri;
+
+
+    for(int i = 0; i<height; i++) {
+        linePro = (uint32_t*) pixelsProcessed;
+        lineOri = (uint32_t*) pixelsOri;
+        for(int j = 0; j<width/4;j += 4) {
+
+            uint32x4_t ori = vld1q_u32(&lineOri[j]);
+            uint32x4_t redOri = vandq_u32(ori, redFactor);
+            uint32x4_t greenOri = vandq_u32(ori, greenFactor);
+            uint32x4_t blueOri = vandq_u32(ori, blueFactor);
+
+            uint32x4_t pre = vld1q_u32(&linePro[j]);
+            uint32x4_t redPre = vandq_u32(pre, redFactor);
+            uint32x4_t greenPre = vandq_u32(pre, greenFactor);
+            uint32x4_t bluePre = vandq_u32(pre, blueFactor);
+
+            float32x4_t red = vmlaq_f32(vmulq_f32((float32_t)redPre , f1V), (float32_t)redOri, f2V);
+            float32x4_t green = vmlaq_f32(vmulq_f32((float32_t)greenPre , f1V), (float32_t)greenOri, f2V);
+            float32x4_t blue = vmlaq_f32(vmulq_f32((float32_t)bluePre , f1V), (float32_t)blueOri, f2V);
+
+
+            //uint8x8_t a =  vdup_n_u8(0);
+        }
+        pixelsProcessed = (uint32_t*)((char*)pixelsProcessed + infoProcessed->stride);
+        pixelsOri = (uint32_t*)((char*)pixelsOri + infoOri->stride);
+    }
+
+
+}
+
+void neonTest(){
+    uint8x8_t a =  vdup_n_u8(0);
+
+    LOGD("result = %d" , a);
 }
