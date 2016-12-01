@@ -78,7 +78,7 @@ public class SobelEdgeFilter {
             }else{
                 outputColor=Gry;
             }
-        }else if (inputParams == 3){
+        }else if (inputParams == 2){
             int Grx= getGrx(colorMatrix);
             int Gry= getGry(colorMatrix);
             int Gr=(int)Math.sqrt(Grx*Grx+Gry*Gry);
