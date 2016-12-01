@@ -12,9 +12,9 @@ public class ColorFilter {
     private int[] inputParams;
 
 
-    ColorFilter(Bitmap img, int[] inputParams){
-        this.img=img;
-        this.inputParams=inputParams;
+    ColorFilter(Bitmap img, int[] inputParams) {
+        this.img = img;
+        this.inputParams = inputParams;
     }
 
 
@@ -22,12 +22,18 @@ public class ColorFilter {
 
         int width = img.getWidth();
         int height = img.getHeight();
-        int[] inputParamsRed=new int[8];
-        for(int i=0;i<8;i++){inputParamsRed[i]=inputParams[i];}
-        int[] inputParamsGreen=new int[8];
-        for(int i=0;i<8;i++){inputParamsGreen[i]=inputParams[i+8];}
-        int[] inputParamsBlue=new int[8];
-        for(int i=0;i<8;i++){inputParamsBlue[i]=inputParams[i+16];}
+        int[] inputParamsRed = new int[8];
+        for (int i = 0; i < 8; i++) {
+            inputParamsRed[i] = inputParams[i];
+        }
+        int[] inputParamsGreen = new int[8];
+        for (int i = 0; i < 8; i++) {
+            inputParamsGreen[i] = inputParams[i + 8];
+        }
+        int[] inputParamsBlue = new int[8];
+        for (int i = 0; i < 8; i++) {
+            inputParamsBlue[i] = inputParams[i + 16];
+        }
 
 
         for (int x = 0 ; x < width; x++) {
@@ -93,7 +99,7 @@ public class ColorFilter {
                 inputColor = (255 - inputParams[7]) / (255 - inputParams[6]) * (inputColor - inputParams[6]) + inputParams[7];
             }
 
-        } else if (inputParams[0] != 0 ) {
+        } else if (inputParams[0] != 0) {
 
             if (inputColor < inputParams[0]) {
 

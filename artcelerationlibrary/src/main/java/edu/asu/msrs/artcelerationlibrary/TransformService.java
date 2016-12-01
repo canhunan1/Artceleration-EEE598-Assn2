@@ -203,9 +203,10 @@ public class TransformService extends Service {
             Log.d("TimeTest " , "java is "+String.valueOf(totalTime));*/
            // return colorFilter.startTransform();
 
+
             /*int[] inputParams = new int[]{0, 20};
             MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
-            return motionBlur.startTransform();*/
+            return motionBlur.startTransform();*//*
              //startTime = System.currentTimeMillis();
 
             //NativeTransform n = new NativeTransform(img[0]);
@@ -222,7 +223,21 @@ public class TransformService extends Service {
 
             //Log.d("brightness",String.valueOf();
             //n.nativeTest();
-            return img[0];//n.getBitmapAndFree();
+            return img[0];//n.getBitmapAndFree();*/
+
+//            int[] inputParams = new int[]{0, 20};
+//            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
+//            return motionBlur.startTransform();
+
+//            int inputParams=3;
+//            SobelEdgeFilter sobelEdgeFilter=new SobelEdgeFilter(img[0],inputParams);
+//            return sobelEdgeFilter.startTransform();
+
+            int[] inputInt = new int[]{20};
+            float[] inputFloat= new float[]{12.0f};
+            GaussianBlur gaussianBlur=new GaussianBlur(img[0], inputInt,inputFloat);
+            return gaussianBlur.startTransform();
+
 
             //return testTransform(img[0]);
         }
