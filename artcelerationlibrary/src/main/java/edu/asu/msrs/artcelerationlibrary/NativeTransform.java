@@ -5,6 +5,7 @@ import android.util.Log;
 
 /**
  * Created by Jianan on 11/22/2016.
+ * This class is to do native transform including color filter and motion blur transform.
  */
 
 public class NativeTransform {
@@ -18,16 +19,23 @@ public class NativeTransform {
 
     public NativeTransform(){}
 
-    static public void NeonEdgeTransform(Bitmap bitmapOri, Bitmap bitmapProcessed, float  f1, float f2){
-       // neonEdgeSum(bitmapOri, bitmapProcessed,   f1,  f2);
-    }
 
+    /*
+    * This function is used to do call the native MotionBlur function
+    * @param img  img is a bitmap to be transformed
+    * @param r    r is the radius of the motion transform
+    * */
     public void motionBlur(Bitmap img, float r)
     {
         Log.d("native motion blur","dd");
         neonMotionBlur( img,r);
     }
 
+    /*
+    * This function is used to do call the native ColorFIlter function
+    * @param img    img is a bitmap to be transformed
+    * @param args   args is int array with input value of the color filter
+    * */
     public boolean colorFilter(Bitmap img, int[] args)
     {
         Log.d("native color filter","dd");
