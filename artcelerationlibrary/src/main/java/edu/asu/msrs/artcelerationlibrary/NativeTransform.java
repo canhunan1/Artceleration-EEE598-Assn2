@@ -1,12 +1,14 @@
+/**
+ * Created by Jianan on 11/22/2016.
+ * This class is to do native transform including color filter and motion blur transform.
+ */
+
 package edu.asu.msrs.artcelerationlibrary;
 
 import android.graphics.Bitmap;
 import android.util.Log;
 
-/**
- * Created by Jianan on 11/22/2016.
- * This class is to do native transform including color filter and motion blur transform.
- */
+
 
 public class NativeTransform {
     static {
