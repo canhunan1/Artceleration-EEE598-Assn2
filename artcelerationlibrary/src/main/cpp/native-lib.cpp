@@ -63,6 +63,11 @@ void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilt
 
     AndroidBitmap_unlockPixels(env, bitmap);
 }
+/*
+ * This function is used to do the color filter transform
+ * @param info      is the bitmap information in the cpp file
+ * @param pixels    pixels is the pointer points to the first address of the bitmap.
+ * */
 void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, void *pixels) {
     jint *inCArray = env->GetIntArrayElements(args, NULL);
 
@@ -94,6 +99,11 @@ void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, voi
         pixels = (char*)pixels + info.stride; //yy*width;//
     }//
 }
+
+/*
+ * This is the function is used to do the color filter transform for a pixel
+ * @inputParams   the input argument to compute the new pixel
+ * */
 int algo_ColorFilter(int inputColor, int inputParams[]) {
     if (inputParams[0] != 0 && inputParams[6] != 255) {
         if (inputColor < inputParams[0]) {
@@ -208,7 +218,12 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_ne
     motionBlur(&info,(uint32_t*)pixels, inCArray[0], inCArray[1]);
     AndroidBitmap_unlockPixels(env, bitmap);
 }
-
+/*
+ * This function is used to do the native motion blur
+ * @param pixels   is the pointer points to the first address of the image
+ * @dir            dir is the direction of the motion blur
+ * @radius         radius is the radius of the motion blur
+ * */
 void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius){
     uint32_t  width = info->width;
     uint32_t height = info->height;
