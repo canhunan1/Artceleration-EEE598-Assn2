@@ -208,9 +208,9 @@ public class TransformService extends Service {
             Bitmap img = null;
             switch (TransformType) {
                 case COLOR_FILTER:
-                    NativeTransform n = new NativeTransform(tP[0].img);
-                    n.colorFilter(tP[0].intArgs);
-                    img = n.getBitmapAndFree();
+                    NativeTransform n = new NativeTransform();
+                    n.colorFilter(tP[0].img, tP[0].intArgs);
+                    img = tP[0].img;
                     break;
                 case MOTION_BLUR:
                     NativeTransform m = new NativeTransform();

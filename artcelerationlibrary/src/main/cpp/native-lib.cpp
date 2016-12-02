@@ -27,9 +27,12 @@ JNIEXPORT jobject JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform
 JNIEXPORT jobject JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniGetBitmapFromStoredBitmapData(JNIEnv * env, jobject obj, jobject handle);
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniFreeBitmapData(JNIEnv * env, jobject obj, jobject handle);
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniRotateBitmapCcw90(JNIEnv * env, jobject obj, jobject handle);
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject obj, jobject handle, jintArray args, uint32_t size);
+//JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject obj, jobject handle, jintArray args, uint32_t size);
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniCropBitmap(JNIEnv * env, jobject obj, jobject handle, uint32_t left, uint32_t top, uint32_t right, uint32_t bottom);
 JNIEXPORT jboolean JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_brightness(JNIEnv * env, jobject  obj, jobject handle,jfloat brightnessValue);
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue);
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);;
+
 
 }
 #ifdef __cplusplus /* If this is a C++ compiler, use C linkage */
@@ -41,20 +44,12 @@ extern "C" {
 }
 #endif
 
-#define  FIR_KERNEL_SIZE   32
-#define  FIR_OUTPUT_SIZE   2560
-#define  FIR_INPUT_SIZE    (FIR_OUTPUT_SIZE + FIR_KERNEL_SIZE)
-#define  FIR_ITERATIONS    600
 
-static const short fir_kernel[FIR_KERNEL_SIZE] = {
-        0x10, 0x20, 0x40, 0x70, 0x8c, 0xa2, 0xce, 0xf0, 0xe9, 0xce, 0xa2, 0x8c, 070, 0x40, 0x20,
-        0x10,
-        0x10, 0x20, 0x40, 0x70, 0x8c, 0xa2, 0xce, 0xf0, 0xe9, 0xce, 0xa2, 0x8c, 070, 0x40, 0x20,
-        0x10};
 
-static short fir_output[FIR_OUTPUT_SIZE];
-static short fir_input_0[FIR_INPUT_SIZE];
-static const short *fir_input = fir_input_0 + (FIR_KERNEL_SIZE / 2);
+
+void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius);
+
+void colorFilter(JNIEnv *env, const _jintArray *args, const AndroidBitmapInfo &info, void *pixels);
 
 JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject /* this */)
 {
@@ -74,62 +69,65 @@ public:
         _storedBitmapPixels = NULL;
     }
 };
-class Color{
-public:
-    uint32_t red;
-    uint32_t green;
-    uint32_t blue;
-    /*Color(uint32_t red, uint32_t green, uint32_t blue){
-        this->red = red;
-        this->green = green;
-        this->blue = blue;
-    }*/
-};
-void setColor(uint32_t* pixel, Color color){
-    uint32_t red = color.red;
-    uint32_t green = color.green;
-    uint32_t blue = color.blue;
-    *pixel= (0xFF000000) |
-            ((red << 16)  & 0x00FF0000) |
-            ((green << 8)  & 0x0000FF00) |
-            (blue  & 0x000000FF);
+
+
+void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, void *pixels) {
+    jint *inCArray = env->GetIntArrayElements(args, NULL);
+
+    uint32_t height = info.height;
+    uint32_t width = info.width;
+    uint32_t xx, yy, red, green, blue;
+    uint32_t* line;
+
+    for(yy = 0; yy < height; yy++){
+        line = (uint32_t*)pixels;
+        for(xx =0; xx < width; xx++){
+            //extract the RGB values from the pixel
+            red =  (uint32_t)((line[xx] & 0x00FF0000) >> 16);
+            green = (uint32_t)((line[xx] & 0x0000FF00) >> 8);
+            blue =  (uint32_t)(line[xx] & 0x000000FF );
+
+            //manipulate each value
+            red = (uint32_t) algo_ColorFilter(red,inCArray);
+            green = (uint32_t) algo_ColorFilter(green,(inCArray+8));
+            blue = (uint32_t)algo_ColorFilter(blue,(inCArray+16));
+
+            // set the new pixel back in
+            line[xx]=
+                    ( 0xFF000000) |
+                    ((red << 16)  & 0x00FF0000) |
+                    ((green << 8)  & 0x0000FF00) |
+                    (blue  & 0x000000FF);
+        }
+        pixels = (char*)pixels + info.stride; //yy*width;//
+    }//
 }
-
-Color getColor(uint32_t* pixel){
-    Color color;
-    color.red =  (uint32_t)((*pixel & 0x00FF0000) >> 16);
-    color.green = (uint32_t)((*pixel & 0x0000FF00) >> 8);
-    color.blue =  (uint32_t)(*pixel & 0x000000FF );
-    return color;
-}
-
-
-/**crops the bitmap within to be smaller. note that no validations are done*/ //
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniCropBitmap(JNIEnv * env, jobject obj, jobject handle, uint32_t left, uint32_t top, uint32_t right, uint32_t bottom)
+void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size)
 {
-    JniBitmap* jniBitmap = (JniBitmap*) env->GetDirectBufferAddress(handle);
-    if (jniBitmap->_storedBitmapPixels == NULL)
+
+    AndroidBitmapInfo  info;
+    int ret;
+    void* pixels;
+    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
         return;
-    uint32_t* previousData = jniBitmap->_storedBitmapPixels;
-    uint32_t oldWidth = jniBitmap->_bitmapInfo.width;
-    uint32_t newWidth = right - left, newHeight = bottom - top;
-    uint32_t* newBitmapPixels = new uint32_t[newWidth * newHeight];
-    uint32_t* whereToGet = previousData + left + top * oldWidth;
-    uint32_t* whereToPut = newBitmapPixels;
-    for (int y = top; y < bottom; ++y)
-    {
-        memcpy(whereToPut, whereToGet, sizeof(uint32_t) * newWidth);
-        whereToGet += oldWidth;
-        whereToPut += newWidth;
     }
-    //done copying , so replace old data with new one
-    delete[] previousData;
-    jniBitmap->_storedBitmapPixels = newBitmapPixels;
-    jniBitmap->_bitmapInfo.width = newWidth;
-    jniBitmap->_bitmapInfo.height = newHeight;
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        LOGE("Bitmap format is not RGBA_8888 !");
+        return;
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    colorFilter(env, args, info, pixels);
+
+    AndroidBitmap_unlockPixels(env, bitmap);
 }
 
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject obj, jobject handle, jintArray args, uint32_t size)
+
+/*JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject obj, jobject handle, jintArray args, uint32_t size)
 {
     jint *inCArray = env->GetIntArrayElements(args,NULL);
 
@@ -173,7 +171,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jn
     jniBitmap->_storedBitmapPixels = previousData;
     jniBitmap->_bitmapInfo.width = info.width;
     jniBitmap->_bitmapInfo.height = info.height;
-}
+}*/
 int algo_ColorFilter(int inputColor, int inputParams[]) {
     if (inputParams[0] != 0 && inputParams[6] != 255) {
         if (inputColor < inputParams[0]) {
@@ -257,6 +255,7 @@ int algo_ColorFilter(int inputColor, int inputParams[]) {
     return inputColor;
 }
 
+/*
 uint32_t monoColorFilter(uint32_t monoColor, uint32_t args[]) {
     // the size of the args should be
     if(args[0]>0 && monoColor<=args[0])
@@ -272,34 +271,9 @@ uint32_t monoColorFilter(uint32_t monoColor, uint32_t args[]) {
     }
     return monoColor;
 }
+*/
 
-/**rotates the inner bitmap data by 90 degress counter clock wise*/ //
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniRotateBitmapCcw90(JNIEnv * env, jobject obj, jobject handle)
-{
-    JniBitmap* jniBitmap = (JniBitmap*) env->GetDirectBufferAddress(handle);
-    if (jniBitmap->_storedBitmapPixels == NULL) {
-        LOGE("AndroidBitmap_storedBitmapPixels == NULL !");
-        return;
-    }
-    uint32_t* previousData = jniBitmap->_storedBitmapPixels;
-    AndroidBitmapInfo bitmapInfo = jniBitmap->_bitmapInfo;
-    uint32_t* newBitmapPixels = new uint32_t[bitmapInfo.height * bitmapInfo.width];
-    int whereToPut = 0;
-    // A.D D.C
-    // ...>...
-    // B.C A.B
-    for (int x = bitmapInfo.width - 1; x >= 0; --x)
-        for (int y = 0; y < bitmapInfo.height; ++y)
-        {
-            uint32_t pixel = previousData[bitmapInfo.width * y + x];
-            newBitmapPixels[whereToPut++] = pixel;
-        }
-    delete[] previousData;
-    jniBitmap->_storedBitmapPixels = newBitmapPixels;
-    uint32_t temp = bitmapInfo.width;
-    bitmapInfo.width = bitmapInfo.height;
-    bitmapInfo.height = temp;
-}
+
 
 /**free bitmap*/  //
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniFreeBitmapData(JNIEnv * env, jobject obj, jobject handle)
@@ -389,89 +363,154 @@ JNIEXPORT jobject JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform
     return env->NewDirectByteBuffer(jniBitmap, 0);
 }
 
-static uint32_t rgb_clamp(uint32_t value) {
-    if(value > 255) {
-        return 255;
-    }
-    if(value < 0) {
-        return 0;
-    }
-    return value;
-}
-
-static void brightness(AndroidBitmapInfo* info, void* pixels, float brightnessValue){
-    uint32_t xx, yy, red, green, blue;
-    uint32_t* line;
-
-    for(yy = 0; yy < info->height; yy++){
-        line = (uint32_t*)pixels;
-        for(xx =0; xx < info->width; xx++){
-
-            //extract the RGB values from the pixel
-            red = ((line[xx] & 0x00FF0000) >> 16);
-            green = ((line[xx] & 0x0000FF00) >> 8);
-            blue =  (line[xx] & 0x000000FF );
-
-            //manipulate each value
-            red = rgb_clamp((uint32_t)(red * brightnessValue));
-            green = rgb_clamp((uint32_t)(green * brightnessValue));
-            blue = rgb_clamp((uint32_t)(blue * brightnessValue));
-
-            // set the new pixel back in
-            line[xx] =
-                    (0xFF000000) |
-                    ((red << 16) & 0x00FF0000) |
-                    ((green << 8) & 0x0000FF00) |
-                    (blue & 0x000000FF);
-        }
-
-        pixels = (char*)pixels + info->stride;
-    }
-}
 
 
 
-JNIEXPORT jboolean JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_brightness(JNIEnv * env, jobject  obj, jobject handle, jfloat brightnessValue)
+
+
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue)
 {
 
-    /*AndroidBitmapInfo  info;
+    AndroidBitmapInfo  info;
     int ret;
     void* pixels;
-
     if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-        return false;
+        return;
     }
     if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
         LOGE("Bitmap format is not RGBA_8888 !");
-        return false;
+        return;
     }
 
     if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
-        LOGE("bright_AndroidBitmap_lockPixels() failed ! error=%d", ret);
-        return false;
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
-      brightness(&info,pixels, brightnessValue);*/
-    JniBitmap* jniBitmap = (JniBitmap*) env->GetDirectBufferAddress(handle);
-    if (jniBitmap->_storedBitmapPixels == NULL)
-        return false;
-    uint32_t* previousData = jniBitmap->_storedBitmapPixels;
-    AndroidBitmapInfo bitmapInfo = jniBitmap->_bitmapInfo;
-    //uint32_t* newBitmapPixels = new uint32_t[bitmapInfo.height * bitmapInfo.width];
-    brightness(&bitmapInfo,previousData, brightnessValue);
 
-
-
-    jniBitmap->_storedBitmapPixels = previousData;
-    uint32_t temp = bitmapInfo.width;
-    bitmapInfo.width = bitmapInfo.height;
-    bitmapInfo.height = temp;
-
-
-
-    return true;
+    //brightness(&info,pixels, brightnessValue);
+    motionBlur(&info,(uint32_t*)pixels, 1, 20);
+    AndroidBitmap_unlockPixels(env, bitmap);
 }
 
+void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius){
+    uint32_t  width = info->width;
+    uint32_t height = info->height;
+    uint32_t* line;
+    int pixelsCount = width * height;
+    uint32_t* ori=  (uint32_t*)malloc(sizeof(uint32_t) *pixelsCount);
+    memcpy(ori, pixels, sizeof(uint32_t) * pixelsCount);
+    if(dir == 0){// horizontal blur
+        for( int i = 0; i < info->height; i++){
+            line = (uint32_t*) pixels;
+            uint32_t sumRed = 0;
+            uint32_t sumGreen = 0;
+            uint32_t sumBlue = 0;
+            for(int j = 0; j<2*radius+1;j++){
+                sumRed +=  (uint32_t)(( line[j] & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( line[j] & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( line[j] & 0x000000FF );
+                if(radius<=j){
+                    uint32_t  red = (sumRed/(j+1));
+                    uint32_t  green = (sumGreen/(j+1));
+                    uint32_t  blue = (sumBlue/(j+1));
+                    line[j-radius] = (0xFF000000)|
+                                     ((red << 16) & 0x00FF0000) |
+                                     ((green << 8) & 0x0000FF00) |
+                                     (blue & 0x000000FF);
+                    /* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
+                     //LOGE("  sum green = %d", sumGreen);
+                     LOGE("%d blue = %d", j-radius,(line[j-radius]& 0x000000FF));
+                     //LOGE("   sum blue = %d", sumBlue);*/
+                }
+
+                /*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
+                LOGE("  sum green = %d", sumGreen);
+                LOGE("%d blue = %d", j,(line[j]& 0x000000FF));
+                LOGE("   sum blue = %d", sumBlue);*/
+
+            }
+            for(int j =radius + 1; j <  info->width-radius; j++){
+                //extract the RGB values from the pixel
+                uint32_t pixelRight =  line[ j + radius];
+                uint32_t pixelLeft = line[ j - radius - 1];// should use ori but have bug here
+                sumRed +=  (uint32_t)(( pixelRight & 0x00FF0000) >> 16) - (uint32_t)(( pixelLeft & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( pixelRight & 0x0000FF00) >> 8) - (uint32_t)(( pixelLeft & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( pixelRight & 0x000000FF ) - (uint32_t)(( pixelLeft & 0x000000FF));
+                uint32_t  red = (sumRed/(2*radius+1));
+                uint32_t  green = (sumGreen/(2*radius+1));
+                uint32_t  blue = (sumBlue/(2*radius+1));
+                // set the new pixel back in
+                /* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
+                 LOGE("   sum green = %d", sumGreen);
+                 LOGE("   aver green = %d", green);
+                 LOGE("%d blue = %d", j,(ori[j]& 0x000000FF));
+                 LOGE("   sum blue = %d", sumBlue);
+                 LOGE("   aver blue = %d", blue);*/
+                line[j] = (0xFF000000)|
+                          ((red << 16) & 0x00FF0000) |
+                          ((green << 8) & 0x0000FF00) |
+                          (blue & 0x000000FF);
+            }
+            pixels = (uint32_t*)((char*)pixels + info->stride);
+        }
+    }else{// vertical blur
+        for( int i = 0; i < width; i++){
+            //line = (uint32_t*) pixels;
+            uint32_t sumRed = 0;
+            uint32_t sumGreen = 0;
+            uint32_t sumBlue = 0;
+            for(int j = 0; j<2*radius+1;j++){
+                sumRed +=  (uint32_t)(( pixels[j*width+i] & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( pixels[j*width+i] & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( pixels[j*width+i] & 0x000000FF );
+                if(radius<=j){
+                    uint32_t  red = (sumRed/(j+1));
+                    uint32_t  green = (sumGreen/(j+1));
+                    uint32_t  blue = (sumBlue/(j+1));
+                    pixels[(j-radius)*width+i] = (0xFF000000)|
+                                                 ((red << 16) & 0x00FF0000) |
+                                                 ((green << 8) & 0x0000FF00) |
+                                                 (blue & 0x000000FF);
+                    /* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
+                     //LOGE("  sum green = %d", sumGreen);
+                     LOGE("%d blue = %d", j-radius,(line[j-radius]& 0x000000FF));
+                     //LOGE("   sum blue = %d", sumBlue);*/
+                }
+
+                /*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
+                LOGE("  sum green = %d", sumGreen);
+                LOGE("%d blue = %d", j,(line[j]& 0x000000FF));
+                LOGE("   sum blue = %d", sumBlue);*/
+
+            }
+            for(int j =radius + 1; j <  height-radius; j++){
+                //extract the RGB values from the pixel
+                uint32_t pixelRight =  pixels[ (j+ radius)*width+i ];
+                uint32_t pixelLeft = pixels[ (j- radius - 1)*width+i ];// should use ori but have bug here
+                sumRed +=  (uint32_t)(( pixelRight & 0x00FF0000) >> 16) - (uint32_t)(( pixelLeft & 0x00FF0000) >> 16);
+                sumGreen += (uint32_t)(( pixelRight & 0x0000FF00) >> 8) - (uint32_t)(( pixelLeft & 0x0000FF00) >> 8);
+                sumBlue +=  (uint32_t)( pixelRight & 0x000000FF ) - (uint32_t)(( pixelLeft & 0x000000FF));
+                uint32_t  red = (sumRed/(2*radius+1));
+                uint32_t  green = (sumGreen/(2*radius+1));
+                uint32_t  blue = (sumBlue/(2*radius+1));
+                // set the new pixel back in
+                /* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
+                 LOGE("   sum green = %d", sumGreen);
+                 LOGE("   aver green = %d", green);
+                 LOGE("%d blue = %d", j,(ori[j]& 0x000000FF));
+                 LOGE("   sum blue = %d", sumBlue);
+                 LOGE("   aver blue = %d", blue);*/
+                pixels[j*width+i] = (0xFF000000)|
+                                    ((red << 16) & 0x00FF0000) |
+                                    ((green << 8) & 0x0000FF00) |
+                                    (blue & 0x000000FF);
+            }
+            //pixels = (char*)pixels + sizeof(uint32_t)*width;
+        }
+    }
+
+    free(ori);
+}
 
 
 

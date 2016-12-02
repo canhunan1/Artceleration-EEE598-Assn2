@@ -33,7 +33,9 @@ public class NativeTransform {
 
     private native void jniCropBitmap(ByteBuffer handler,final int left,final int top,final int right,final int bottom);
 
-    private native void jniColorFilter(ByteBuffer handler,int[] args, int size);
+    //private native void jniColorFilter(ByteBuffer handler,int[] args, int size);
+    private native void jniColorFilter(Bitmap img,int[] args, int size);
+
     private native boolean brightness(ByteBuffer handler,float brightness);
     private native boolean neonBrightness(Bitmap img,float brightness);
     private native boolean neonMotionBlur(Bitmap img,float brightness);
@@ -81,25 +83,25 @@ public class NativeTransform {
        // neonEdgeSum(bitmapOri, bitmapProcessed,   f1,  f2);
     }
 
-    public void motionBlur(Bitmap img, float brightness)
+    public void motionBlur(Bitmap img, float r)
     {
         Log.d("native motion blur","dd");
 
-        neonMotionBlur( img,brightness);
+        neonMotionBlur( img,r);
     }
 
-    public boolean colorFilter(int[] args)
+    public boolean colorFilter(Bitmap img, int[] args)
     {
-        if(_handler==null)
-            return false;
+
        /* if(!colorFilterValidateArgs(args)){
             return false;
         }*/
-        nativeTest();
-        jniColorFilter(_handler, args, args.length);
+       // nativeTest();
+        Log.d("native color filter","dd");
+        jniColorFilter(img, args, args.length);
         return true;
     }
-    private boolean colorFilterValidateArgs(int args[]){
+    /*private boolean colorFilterValidateArgs(int args[]){
         if(args == null || args.length!=24 )
             return false;
         for(int i = 0; i<args.length; i++){
@@ -111,7 +113,7 @@ public class NativeTransform {
                 return false;
         }
         return true;
-    }
+    }*/
 
 
     public void cropBitmap(final int left,final int top,final int right,final int bottom)

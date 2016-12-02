@@ -238,7 +238,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_ne
     AndroidBitmap_unlockPixels(env, bitmap);
 }
 
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue)
+/*JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue)
 {
 
     AndroidBitmapInfo  info;
@@ -287,16 +287,16 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
                               ((red << 16) & 0x00FF0000) |
                               ((green << 8) & 0x0000FF00) |
                               (blue & 0x000000FF);
-                   /* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
+                   *//* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
                     //LOGE("  sum green = %d", sumGreen);
                     LOGE("%d blue = %d", j-radius,(line[j-radius]& 0x000000FF));
-                    //LOGE("   sum blue = %d", sumBlue);*/
+                    //LOGE("   sum blue = %d", sumBlue);*//*
                 }
 
-                /*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
+                *//*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
                 LOGE("  sum green = %d", sumGreen);
                 LOGE("%d blue = %d", j,(line[j]& 0x000000FF));
-                LOGE("   sum blue = %d", sumBlue);*/
+                LOGE("   sum blue = %d", sumBlue);*//*
 
             }
             for(int j =radius + 1; j <  info->width-radius; j++){
@@ -310,12 +310,12 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
                 uint32_t  green = (sumGreen/(2*radius+1));
                 uint32_t  blue = (sumBlue/(2*radius+1));
                 // set the new pixel back in
-               /* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
+               *//* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
                 LOGE("   sum green = %d", sumGreen);
                 LOGE("   aver green = %d", green);
                 LOGE("%d blue = %d", j,(ori[j]& 0x000000FF));
                 LOGE("   sum blue = %d", sumBlue);
-                LOGE("   aver blue = %d", blue);*/
+                LOGE("   aver blue = %d", blue);*//*
                 line[j] = (0xFF000000)|
                            ((red << 16) & 0x00FF0000) |
                            ((green << 8) & 0x0000FF00) |
@@ -341,16 +341,16 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
                                      ((red << 16) & 0x00FF0000) |
                                      ((green << 8) & 0x0000FF00) |
                                      (blue & 0x000000FF);
-                    /* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
+                    *//* LOGE("%d  green = %d", j-radius,(line[j-radius]& 0x0000FF00)>> 8);
                      //LOGE("  sum green = %d", sumGreen);
                      LOGE("%d blue = %d", j-radius,(line[j-radius]& 0x000000FF));
-                     //LOGE("   sum blue = %d", sumBlue);*/
+                     //LOGE("   sum blue = %d", sumBlue);*//*
                 }
 
-                /*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
+                *//*LOGE("%d  green = %d", j,(line[j]& 0x0000FF00)>> 8);
                 LOGE("  sum green = %d", sumGreen);
                 LOGE("%d blue = %d", j,(line[j]& 0x000000FF));
-                LOGE("   sum blue = %d", sumBlue);*/
+                LOGE("   sum blue = %d", sumBlue);*//*
 
             }
             for(int j =radius + 1; j <  height-radius; j++){
@@ -364,12 +364,12 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
                 uint32_t  green = (sumGreen/(2*radius+1));
                 uint32_t  blue = (sumBlue/(2*radius+1));
                 // set the new pixel back in
-                /* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
+                *//* LOGE("%d green = %d", j,(ori[j]& 0x0000FF00)>> 8);
                  LOGE("   sum green = %d", sumGreen);
                  LOGE("   aver green = %d", green);
                  LOGE("%d blue = %d", j,(ori[j]& 0x000000FF));
                  LOGE("   sum blue = %d", sumBlue);
-                 LOGE("   aver blue = %d", blue);*/
+                 LOGE("   aver blue = %d", blue);*//*
                 pixels[j*width+i] = (0xFF000000)|
                           ((red << 16) & 0x00FF0000) |
                           ((green << 8) & 0x0000FF00) |
@@ -380,4 +380,4 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
     }
 
     free(ori);
-}
+}*/
