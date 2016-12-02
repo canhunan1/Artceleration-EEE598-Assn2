@@ -1,5 +1,6 @@
 //
 // Created by Jianan on 11/4/2016.
+// This is the native lib file with native motion blur and native color filter transform
 //
 
 
@@ -8,7 +9,6 @@
 #include <stdio.h>
 #include <android/bitmap.h>
 #include <cstring>
-#include <unistd.h>
 #include <string>
 
 
@@ -21,17 +21,25 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
 void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, void *pixels);
 extern "C"
 {
-JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject  /*this*/ );
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue);
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);;
+    JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject  /*this*/ );
+    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args);
+    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);;
 }
-
+/*
+ * This function is the test function
+ * */
 JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject /* this */)
 {
        std::string hello = "Hello";
     return env->NewStringUTF(hello.c_str());
 }
 
+/*
+ * This is the color filter transform which uses the same algorithm as in the java
+ * This function is used to transfer the bitmap to byte array that can be used in cpp file
+ * @param bitmap    bitmap is the image to be processed
+ * @param args      args is the input argument
+ * */
 void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size)
 {
 
@@ -169,9 +177,17 @@ int algo_ColorFilter(int inputColor, int inputParams[]) {
     return inputColor;
 }
 
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue)
+/*
+ * This is the motion blur transform which uses the same algorithm as in the java
+ * This function is used to transfer the bitmap to byte array that can be used in cpp file
+ * @param bitmap    bitmap is the image to be processed
+ * @param args      args is the input argument
+ * */
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args)
 {
-
+    jint *inCArray = env->GetIntArrayElements(args, NULL);
+    LOGD("i1 = %d",inCArray[0]);
+    LOGD("i2 = %d",inCArray[1]);
     AndroidBitmapInfo  info;
     int ret;
     void* pixels;
@@ -188,8 +204,8 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_ne
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
 
-    //brightness(&info,pixels, brightnessValue);
-    motionBlur(&info,(uint32_t*)pixels, 1, 20);
+    //brightness(&info,pixels, fArgu);
+    motionBlur(&info,(uint32_t*)pixels, inCArray[0], inCArray[1]);
     AndroidBitmap_unlockPixels(env, bitmap);
 }
 
