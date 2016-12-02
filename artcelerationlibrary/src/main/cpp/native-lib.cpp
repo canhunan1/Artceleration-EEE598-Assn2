@@ -18,8 +18,7 @@
 
 int algo_ColorFilter(int inputColor, int inputParams[]);
 void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius);
-
-void colorFilter(JNIEnv *env, const _jintArray *args, const AndroidBitmapInfo &info, void *pixels);
+void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, void *pixels);
 extern "C"
 {
 JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject  /*this*/ );
@@ -27,17 +26,37 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_ne
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);;
 }
 
-
-
 JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject /* this */)
 {
-    //fir_filter_neon_intrinsics(fir_output, fir_input, fir_kernel, FIR_OUTPUT_SIZE, FIR_KERNEL_SIZE);
-    //int16x4_t  input_vec = vld1_s16(fir_input);
-
-    std::string hello = "Hello";
+       std::string hello = "Hello";
     return env->NewStringUTF(hello.c_str());
 }
 
+
+
+void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size)
+{
+
+    AndroidBitmapInfo  info;
+    int ret;
+    void* pixels;
+    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        LOGE("Bitmap format is not RGBA_8888 !");
+        return;
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    colorFilter(env, args, info, pixels);
+
+    AndroidBitmap_unlockPixels(env, bitmap);
+}
 void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, void *pixels) {
     jint *inCArray = env->GetIntArrayElements(args, NULL);
 
@@ -69,31 +88,6 @@ void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, voi
         pixels = (char*)pixels + info.stride; //yy*width;//
     }//
 }
-
-void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size)
-{
-
-    AndroidBitmapInfo  info;
-    int ret;
-    void* pixels;
-    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
-        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-        return;
-    }
-    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        LOGE("Bitmap format is not RGBA_8888 !");
-        return;
-    }
-
-    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-    }
-
-    colorFilter(env, args, info, pixels);
-
-    AndroidBitmap_unlockPixels(env, bitmap);
-}
-
 int algo_ColorFilter(int inputColor, int inputParams[]) {
     if (inputParams[0] != 0 && inputParams[6] != 255) {
         if (inputColor < inputParams[0]) {
