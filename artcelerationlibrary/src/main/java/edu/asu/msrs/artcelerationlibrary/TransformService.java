@@ -1,3 +1,9 @@
+/*
+* This class is used to do the background service.
+* When doing image transform, just put the image into a new thread with the async.
+* After the processing, send the image back to the front by message.
+* */
+
 package edu.asu.msrs.artcelerationlibrary;
 
 import android.app.Service;
@@ -24,10 +30,6 @@ import java.util.ArrayList;
 
 public class TransformService extends Service {
 
-   /* static {
-        System.loadLibrary("my-native-lib");
-    }*/
-
     static final int COLOR_FILTER = 0;
     static final int MOTION_BLUR = 1;
     static final int GAUSSIAN_BLUR = 2;
@@ -39,10 +41,8 @@ public class TransformService extends Service {
     static Messenger replyTo;
     static int TransformType;
 
-
     public TransformService() {
     }
-
 
     private class TransformPackage{
         Bitmap img;
@@ -168,7 +168,6 @@ public class TransformService extends Service {
         }
     }
 
-
     /*
     * This method is the test transform which change part of the image to be yellow
     * @param img    img should be mutable bitmap
@@ -201,7 +200,11 @@ public class TransformService extends Service {
 
     class AsyncTest extends AsyncTask<TransformPackage, Float, Bitmap> {
         //DONE IN BACKGROUND
-
+        /*
+        * This function is used to do image transform in a separated thread.
+        * @param tp       tP is a TransformPackage array
+        * @return Bitmap  the result of after the transformation
+        * */
         @Override
         protected Bitmap doInBackground(TransformPackage... tP) {
 
@@ -232,7 +235,6 @@ public class TransformService extends Service {
                 default:
                     break;
             }
-
             return img;
         }
         //ON UI THREAD
