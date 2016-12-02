@@ -115,7 +115,8 @@ public class ArtLib {
     * @return           true if the transform is started successfully, false otherwise
     * */
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
-
+        if(!argumentValidation(index, intArgs, floatArgs))
+            return false;
         try {
             //Write the image to the memory file
             //Firstly,convert bitmap to byte array
@@ -154,6 +155,63 @@ public class ArtLib {
         } catch (IOException e) {
             e.printStackTrace();
             return false;
+        }
+        return true;
+    }
+    private boolean argumentValidation(int index, int[] intArgs, float[] floatArgs){
+        int intLength = intArgs.length;
+        float floatLength = floatArgs.length;
+        switch (index) {
+            case TransformService.COLOR_FILTER:
+                if(intLength!=24){
+                    return false;
+                }
+                int pre = intArgs[0];
+                for(int i = 0; i<intLength;i++){
+                    if(intArgs[i]<=0 || intArgs[i]>255)
+                        return false;
+                    if(i%2 == 0 && i%8 != 0) {
+                        if(intArgs[i] <= pre)
+                            return false;
+                        else {
+                            if(i+2<intLength)
+                                pre = intArgs[i];
+                        }
+                    }
+                    if(i%8 == 0)
+                        pre = intArgs[i];
+                }
+                break;
+            case TransformService.MOTION_BLUR:
+                if(intLength != 2)
+                    return false;
+                if(intArgs[0] != 0 && intArgs[0] != 1)
+                    return false;
+                if(intArgs[1] <= 0)
+                    return false;
+                break;
+            case TransformService.GAUSSIAN_BLUR:
+                if(intLength != 1 || floatLength != 1)
+                    return false;
+                if(intArgs[0]<=0||floatArgs[0]<=0)
+                    return false;
+                break;
+            case TransformService.SOBEL_EDGE:
+                if( intLength != 1 )
+                    return false;
+                if(intArgs[0] != 0 && intArgs[0] != 1 && intArgs[0] != 2)
+                    return false;
+                break;
+            case TransformService.NEON_EDGES:
+                if(floatLength != 3)
+                    return false;
+                if(floatArgs[0]<=0)
+                    return false;
+                //if()
+                break;
+            default:
+                return false;
+
         }
         return true;
     }
