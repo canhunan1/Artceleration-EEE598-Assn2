@@ -89,15 +89,17 @@ public class ArtLib {
 
     public String[] getTransformsArray() {
         //String[] transforms = {"Color Filter", "Motion Blur","Gaussian Blur", "Tilt Shift", "Neon Edges", "Test Transform"};
-        String[] transforms = {"Gaussian Blur", "Neon edges", "Color Filter"};
+        String[] transforms = {"Color Filter", "Motion Blur", "Gaussian Blur","Sobel edges", "Neon edges" };
         return transforms;
     }
 
     public TransformTest[] getTestsArray() {
-        TransformTest[] transforms = new TransformTest[3];
-        transforms[0] = new TransformTest(0, new int[]{1, 2, 3}, new float[]{0.1f, 0.2f, 0.3f});
-        transforms[1] = new TransformTest(1, new int[]{11, 22, 33}, new float[]{0.3f, 0.2f, 0.3f});
-        transforms[2] = new TransformTest(2, new int[]{51, 42, 33}, new float[]{0.5f, 0.6f, 0.3f});
+        TransformTest[] transforms = new TransformTest[5];
+        transforms[0] = new TransformTest(0, new int[]{0, 0, 30, 30, 100, 100, 255, 255, 0, 0, 30, 50, 60, 150, 90, 250,100, 100, 130, 130, 200, 200, 255, 255}, new float[]{0.1f, 0.2f, 0.3f});
+        transforms[1] = new TransformTest(1, new int[]{0, 1}, new float[]{0.3f, 0.2f, 0.3f});
+        transforms[2] = new TransformTest(2, new int[]{20}, new float[]{5f});
+        transforms[3] = new TransformTest(3, new int[]{2}, new float[]{0.5f, 0.6f, 0.3f});
+        transforms[4] = new TransformTest(4, new int[]{51, 42, 33}, new float[]{1.5f, 0.6f, 0.4f});
 
         return transforms;
     }
@@ -168,7 +170,7 @@ public class ArtLib {
                 }
                 int pre = intArgs[0];
                 for(int i = 0; i<intLength;i++){
-                    if(intArgs[i]<=0 || intArgs[i]>255)
+                    if(intArgs[i]<0 || intArgs[i]>255)
                         return false;
                     if(i%2 == 0 && i%8 != 0) {
                         if(intArgs[i] <= pre)
