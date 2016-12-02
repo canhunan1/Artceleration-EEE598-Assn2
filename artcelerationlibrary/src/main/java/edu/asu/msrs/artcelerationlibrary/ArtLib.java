@@ -96,7 +96,7 @@ public class ArtLib {
     public TransformTest[] getTestsArray() {
         TransformTest[] transforms = new TransformTest[5];
         transforms[0] = new TransformTest(0, new int[]{0, 0, 30, 30, 100, 100, 255, 255, 0, 0, 30, 50, 60, 150, 90, 250,100, 100, 130, 130, 200, 200, 255, 255}, new float[]{0.1f, 0.2f, 0.3f});
-        transforms[1] = new TransformTest(1, new int[]{0, 1}, new float[]{0.3f, 0.2f, 0.3f});
+        transforms[1] = new TransformTest(1, new int[]{0, 20}, new float[]{0.3f, 0.2f, 0.3f});
         transforms[2] = new TransformTest(2, new int[]{20}, new float[]{5f});
         transforms[3] = new TransformTest(3, new int[]{2}, new float[]{0.5f, 0.6f, 0.3f});
         transforms[4] = new TransformTest(4, new int[]{51, 42, 33}, new float[]{1.5f, 0.6f, 0.4f});

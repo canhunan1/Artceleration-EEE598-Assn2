@@ -217,7 +217,7 @@ public class TransformService extends Service {
                     break;
                 case MOTION_BLUR:
                     NativeTransform m = new NativeTransform();
-                    m.motionBlur(tP[0].img,tP[0].floatArgs[0]);
+                    m.motionBlur(tP[0].img,tP[0].intArgs);
                     img = tP[0].img;
                     break;
                 case GAUSSIAN_BLUR:

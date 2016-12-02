@@ -17,7 +17,7 @@ public class NativeTransform {
     public native static String myStringFromJNI();
     public native static String stringFromJNI();
     private native void jniColorFilter(Bitmap img,int[] args, int size);
-    private native boolean neonMotionBlur(Bitmap img,float brightness);
+    private native boolean neonMotionBlur(Bitmap img,int[] intArgus);
 
     public NativeTransform(){}
 
@@ -27,10 +27,10 @@ public class NativeTransform {
     * @param img  img is a bitmap to be transformed
     * @param r    r is the radius of the motion transform
     * */
-    public void motionBlur(Bitmap img, float r)
+    public void motionBlur(Bitmap img, int[] intArgus)
     {
         Log.d("native motion blur","dd");
-        neonMotionBlur( img,r);
+        neonMotionBlur( img,intArgus);
     }
 
     /*
