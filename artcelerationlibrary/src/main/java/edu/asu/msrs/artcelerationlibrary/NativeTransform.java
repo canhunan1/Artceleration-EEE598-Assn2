@@ -37,9 +37,11 @@ public class NativeTransform {
     private native boolean brightness(ByteBuffer handler,float brightness);
     private native boolean neonBrightness(Bitmap img,float brightness);
     private native boolean neonMotionBlur(Bitmap img,float brightness);
+   // static private native void neonEdgeSum(Bitmap bitmapOri, Bitmap bitmapProcessed, float  f1, float f2) ;
 
 
-    public NativeTransform(){
+
+        public NativeTransform(){
 
     }
 
@@ -73,6 +75,10 @@ public class NativeTransform {
         Log.d("native bright","dd");
 
         neonBrightness(img, brightness);
+    }
+
+    static public void NeonEdgeTransform(Bitmap bitmapOri, Bitmap bitmapProcessed, float  f1, float f2){
+       // neonEdgeSum(bitmapOri, bitmapProcessed,   f1,  f2);
     }
 
     public void motionBlur(Bitmap img, float brightness)

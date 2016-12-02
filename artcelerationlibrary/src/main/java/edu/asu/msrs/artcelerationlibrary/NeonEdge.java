@@ -21,7 +21,13 @@ public class NeonEdge {
         float[] f = {argsF[0]};
         GaussianBlur gaussianBlur=new GaussianBlur(img, r,f);
         img = gaussianBlur.startTransform();
+        //NativeTransform.NeonEdgeTransform(original, img, argsF[1], argsF[2]);
 
+        neonEdgeLinearSum(img, argsF, original);
+        return img;
+    }
+
+    private static void neonEdgeLinearSum(Bitmap img, float[] argsF, Bitmap original) {
         for(int i = 0;i < img.getWidth();i++){
             for(int j = 0; j < img.getHeight();j++){
                 int pixel = img.getPixel(i,j);
@@ -40,7 +46,6 @@ public class NeonEdge {
 
             }
         }
-        return img;
     }
 
 }

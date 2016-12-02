@@ -184,7 +184,7 @@ void neonMotionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int rad
 }
 
 void neonNeonEdgeLinearSum(AndroidBitmapInfo* infoOri, uint32_t * pixelsOri,AndroidBitmapInfo* infoProcessed, uint32_t * pixelsProcessed,float f1,float f2){
-    uint32_t  width = infoOri->width;
+    /*uint32_t  width = infoOri->width;
     uint32_t  height = infoOri->height;
     uint32x4_t redFactor = vdupq_n_u32(0x00FF0000);
     uint32x4_t greenFactor = vdupq_n_u32(0x0000FF00);
@@ -219,7 +219,7 @@ void neonNeonEdgeLinearSum(AndroidBitmapInfo* infoOri, uint32_t * pixelsOri,Andr
         }
         pixelsProcessed = (uint32_t*)((char*)pixelsProcessed + infoProcessed->stride);
         pixelsOri = (uint32_t*)((char*)pixelsOri + infoOri->stride);
-    }
+    }*/
 
 
 }
