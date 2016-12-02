@@ -198,11 +198,6 @@ public class TransformService extends Service {
         return mMessenger.getBinder();
     }
 
-    // public native static int JNI_OnLoad();
-
-
-
-
 
     class AsyncTest extends AsyncTask<TransformPackage, Float, Bitmap> {
         //DONE IN BACKGROUND
@@ -239,62 +234,7 @@ public class TransformService extends Service {
             }
 
             return img;
-            /*int[] inputParams = new int[]{5, 26, 30, 80, 100, 150, 170, 230, 1, 68, 30, 10, 150, 150, 200, 30,100, 130, 130, 80, 200, 250, 240, 5};
-            long startTime = System.currentTimeMillis();
-
-
-            ColorFilter colorFilter= new ColorFilter(img[0],inputParams);
-            colorFilter.startTransform();
-            long endTime   = System.currentTimeMillis();
-            long totalTime = endTime - startTime;
-            Log.d("TimeTest " , "java is "+String.valueOf(totalTime));
-            return colorFilter.startTransform();*/
-
-
-            /*int[] inputParams = new int[]{0, 20};
-            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
-            return motionBlur.startTransform();*/
-
-             //startTime = System.currentTimeMillis();
-
-          // NativeTransform n = new NativeTransform(img[0]);
-            //NativeTransform n = new NativeTransform();
-            //n.cropBitmap(10,10,1000,1000);
-            //n.rotateBitmapCcw90();
-           // n.brightness((float)1.3);
-          //  int[] args = {0, 0, 30, 30, 100, 100, 255, 255, 0, 0, 30, 50, 60, 150, 90, 250,100, 100, 130, 130, 200, 200, 255, 255};
-           // n.colorFilter(args);
-            //n.motionBlur(img[0],(float)1.5);
-             //endTime   = System.currentTimeMillis();
-             //totalTime = endTime - startTime;
-            //Log.d("TimeTest " , "native is"+String.valueOf(totalTime));
-
-            //Log.d("brightness",String.valueOf();
-            //n.nativeTest();
-           // return img[0];//n.getBitmapAndFree();*/
-          //  return n.getBitmapAndFree();
-
-//            int[] inputParams = new int[]{0, 20};
-//            MotionBlur motionBlur=new MotionBlur(img[0],inputParams);
-//            return motionBlur.startTransform();
-
-           /*int inputParams=3;
-            SobelEdgeFilter sobelEdgeFilter=new SobelEdgeFilter(img[0],inputParams);
-            return sobelEdgeFilter.startTransform();*/
-            /*SobelEdgeFilter sobelEdgeFilter=new SobelEdgeFilter();
-            return sobelEdgeFilter.toGrayscale(img[0]);*/
-
-            /*int[] inputInt = new int[]{20};
-            float[] inputFloat= new float[]{3.0f};
-            GaussianBlur gaussianBlur=new GaussianBlur(img[0], inputInt,inputFloat);
-            return gaussianBlur.startTransform();*/
-
-
-            //return testTransform(img[0]);
-           // float[] argF= {1, 0.8f, 0.2f};
-           // return  NeonEdge.NeonEdgeTransForm(tP[0].img,argF);
         }
-
         //ON UI THREAD
         protected void onPostExecute(Bitmap mutableBitmap) {
 
