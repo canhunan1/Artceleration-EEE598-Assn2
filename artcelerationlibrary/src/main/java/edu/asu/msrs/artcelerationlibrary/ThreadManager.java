@@ -1,3 +1,5 @@
+/*This class is no not used in this project*/
+
 package edu.asu.msrs.artcelerationlibrary;
 
 import android.os.AsyncTask;
