@@ -32,8 +32,6 @@ JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform
     return env->NewStringUTF(hello.c_str());
 }
 
-
-
 void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size)
 {
 
