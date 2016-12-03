@@ -101,7 +101,7 @@ public class ArtLib {
         transforms[1] = new TransformTest(1, new int[]{0, 20}, new float[]{0.3f, 0.2f, 0.3f});
         transforms[2] = new TransformTest(2, new int[]{20}, new float[]{5f});
         transforms[3] = new TransformTest(3, new int[]{2}, new float[]{0.5f, 0.6f, 0.3f});
-        transforms[4] = new TransformTest(4, new int[]{51, 42, 33}, new float[]{1.5f, 0.6f, 0.4f});
+        transforms[4] = new TransformTest(4, new int[]{51, 42, 33}, new float[]{1.5f, 0.2f, 0.8f});
 
         return transforms;
     }

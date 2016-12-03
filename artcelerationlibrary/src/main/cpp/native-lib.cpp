@@ -26,9 +26,9 @@ void GaussianBlur(float * weightVector,uint32_t *pixels,int width,int height, in
 extern "C"
 {
     JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject  /*this*/ );
-    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args);
     JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);
     JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniGaussianBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray intArgs, jfloatArray floatArgs);
+    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_nativeMotionBlur(JNIEnv *env, jobject obj, jobject bitmap, jintArray args);
 }
 /*
  * This function is the test function
@@ -203,7 +203,8 @@ int algo_ColorFilter(int inputColor, int inputParams[]) {
  * @param bitmap    bitmap is the image to be processed
  * @param args      args is the input argument
  * */
-JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args)
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_nativeMotionBlur(
+        JNIEnv *env, jobject obj, jobject bitmap, jintArray args)
 {
     jint *inCArray = env->GetIntArrayElements(args, NULL);
     LOGD("i1 = %d",inCArray[0]);
