@@ -4,12 +4,20 @@
 By Jianan Yang and Wenhao Chen
 
 ## Goal
-Artceleration is an Android library framework / service which enables user application to implement artistic transforms for images. In current version, it includes 5 different image tranformation functions for app developer to use - COLOR_FILTER, MOTION_BLUR, GAUSSIAN_BLUR, TILT_SHIFT and NEON_EDGES.
+Artceleration is an Android library framework / service which enables user application to implement artistic transforms for images. In current version, it includes 5 different image tranformation functions for app developer to use - COLOR_FILTER, MOTION_BLUR, GAUSSIAN_BLUR, SOBEL_EDGES and NEON_EDGES.
 
 ## Client-end App
-The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick can use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing in the yellow region which is a dummy image transformation we implement for this checkout point.
+The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick and use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing if you drag the image left and right. Below are the examples:
 
-![alt tag](https://cloud.githubusercontent.com/assets/21367763/20068194/133eafc4-a4d5-11e6-8d02-bb0ff2de6e1f.png) Sample app
+![alt tag](https://cloud.githubusercontent.com/assets/21367763/20857127/f5e119f2-b8df-11e6-874f-dab39c67cc8d.PNG) 1. Color_Filter
+
+![alt tag](https://cloud.githubusercontent.com/assets/21367763/20857126/eed6a7e4-b8df-11e6-8243-1761ce921640.PNG) 2. Motion_Blur
+
+![alt tag](https://cloud.githubusercontent.com/assets/21367763/20857129/ff11a488-b8df-11e6-81cf-fb393ad71ced.PNG) 3. Gaussian_Blur
+
+![alt tag](https://cloud.githubusercontent.com/assets/21367763/20857131/033ca26a-b8e0-11e6-98ae-a0aea9e0203e.PNG) 4. Sobel_Edge
+
+![alt tag](https://cloud.githubusercontent.com/assets/21367763/20857136/1a4c68a0-b8e0-11e6-96a7-47ffb8f76e89.PNG) 5. Neon_Edge
 
 ## Framework/Service Design
 In summary, the client's requests are sent to service for image processing, once processing is done, the processed image is sent back to client and shown on app's UI.
