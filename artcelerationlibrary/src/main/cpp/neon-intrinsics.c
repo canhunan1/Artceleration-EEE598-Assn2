@@ -54,7 +54,13 @@ void fir_filter_neon_intrinsics(short *output, const short* input, const short* 
 }
 
 
-
+/*
+ * This method defines the linear add mathematical calculation which performed in neon.
+ * @param   infoOri input is used to find the information of original bitmap image.
+ * @param   pixelsOri is the bitmap header pointer which points to the address of first byte of original bitmap image.
+ * @param   infoProcessed input is used to find the information of bitmap image after SobelEdge and GaussianBlur transform.
+ * @param   pixelsProcessed is the bitmap  pointer which points to the address of first byte of bitmap imageafter SobelEdge and GaussianBlur transform.
+ * */
 void neonNeonEdgeLinearSum(AndroidBitmapInfo* infoOri, uint32_t * pixelsOri,AndroidBitmapInfo* infoProcessed, uint32_t * pixelsProcessed,float f1,float f2){
     uint32_t  width = infoOri->width;
     uint32_t  height = infoOri->height;

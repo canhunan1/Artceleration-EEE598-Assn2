@@ -161,10 +161,12 @@ Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_stringFromJNI(JNIEnv *env
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 
-
-
-
-/* Start from here*/
+/*
+ * This is neon implementation for NeonEdge transformation.
+ * Note that it only performs the last step in NeonEdge algorithm, which is linear combination.
+ * @param   bitmapOri is the original bitmap to be used by this function.
+ * @param   bitmapProcessed is the bitmap which stores the pixel values after SobelEdge and GaussianBlur transform.
+ * */
  void Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonNeonEdges(JNIEnv * env, jobject  obj, jobject bitmapOri, jobject bitmapProcessed, jfloat f1, jfloat f2)
 {
 
