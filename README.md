@@ -334,6 +334,21 @@ static private class ImageProcessedHandler extends Handler {
     }
 ```
 
+## Image Transform Algorithms Implementation
+Five different image process algorithms are implemented in this APP. Three of them are written in ```Java```, i.e. ```GaussianBlur```, ```SobelEdge``` and ```NeonEdge```, while the other two are written in native language ```C++```, they are ```ColorFilter``` and ```MotionBlur```. Each of them are created as an individual class.
+
+The ```Java``` image process classes are located in ```Java_edu_asu_msrs_artcelerationlibrary``` folder, with the name of ```GaussianBlur.class```, ```SobelEdgeFilter.class``` and ```NeonEdge.class```. To use them, you just need to simply create a corresponding class with ```Bitmap``` image and transform paramters as its inputs. Then call ```startTransform()``` method and the process will start and the processed ```Bitmap``` will be returned.
+
+The two ```native(C++)``` image process classes are located in ```cpp_native-lib``` folder, with the name of ```native-lib.cpp```. The ```C++``` methods are interfaced with a ```Java``` class, ```NativeTransform.class```, with ```JNIEXPORT``` and ```JNICALL```. To use these algorithms written in ```native``` language, you can just create a ```NativeTransform``` object and all its correspoinding methods, i.e. ```motionBlur()``` and ```colorFilter()```, in the body of these two methods, they call ```nativeMotionBlur()``` and ```jniColorFilter()``` which runs in ```native``` library.
+
+```
+extern "C"
+{
+    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);
+    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_nativeMotionBlur(JNIEnv *env, jobject obj, jobject bitmap, jintArray args);
+}
+```
+
 ## Strategy
 1. In general, we discuss coding logic and brainstorm ideas together. As for task, one person majorly dedicated on writing code and the other person focuses on debugging and documentation writing.
 
