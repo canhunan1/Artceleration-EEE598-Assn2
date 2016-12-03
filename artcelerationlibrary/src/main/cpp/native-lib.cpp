@@ -10,6 +10,7 @@
 #include <android/bitmap.h>
 #include <cstring>
 #include <string>
+#include <math.h>
 
 
 #define  LOG_TAG    "DEBUG"
@@ -19,11 +20,15 @@
 int algo_ColorFilter(int inputColor, int inputParams[]);
 void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius);
 void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, void *pixels);
+void algo_GaussianBlue_first(uint32_t* pixels, int width, int intInput0, float* weightVector, int weightLength,int positionX, int positionY);
+void algo_GaussianBlue_second(uint32_t* pixels, int height, int intInput0,float weightVector[], int weightLength, int positionX, int positionY) ;
+void GaussianBlur(float * weightVector,uint32_t *pixels,int width,int height, int inputInt,float inputFloat, int weightLength);
 extern "C"
 {
     JNIEXPORT jstring JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_myStringFromJNI(JNIEnv *env, jobject  /*this*/ );
     JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonMotionBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args);
-    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);;
+    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniColorFilter(JNIEnv * env, jobject  obj, jobject bitmap, jintArray args, uint32_t size);
+    JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniGaussianBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray intArgs, jfloatArray floatArgs);
 }
 /*
  * This function is the test function
@@ -349,6 +354,137 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
     free(ori);
 }
 
+
+
+/*Gaussian Blur*/
+JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_jniGaussianBlur(JNIEnv * env, jobject  obj, jobject bitmap, jintArray intArgs, jfloatArray floatArgs)
+{
+
+    AndroidBitmapInfo  info;
+    int ret;
+    void* pixels;
+    if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+    if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        LOGE("Bitmap format is not RGBA_8888 !");
+        return;
+    }
+
+    if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+
+    int * inputInt = env->GetIntArrayElements(intArgs, NULL);
+    float * inputFloat = env->GetFloatArrayElements(floatArgs, NULL);
+    int weightLength = 2 * inputInt[0] + 1;
+    float * weightVector =(float*)malloc(sizeof(float)*weightLength);
+    LOGD("Good 383");
+    GaussianBlur(weightVector,(uint32_t*) pixels,info.width,info.height, inputInt[0],inputFloat[0],  weightLength);
+    LOGD("Good 385");
+    free(weightVector);
+    AndroidBitmap_unlockPixels(env, bitmap);
+}
+
+/**
+     * This function is used to start the Gaussian Blur transform, it takes no inputs and returns the transformed bitmap.
+     */
+void GaussianBlur(float * weightVector,uint32_t *pixels,int width,int height, int inputInt,float inputFloat, int weightLength) {
+    //initiate Gaussian weight vector
+   // weightInit(this.inputInt[0], inputFloat[0]);
+    LOGD("height=%d, width=%d",width,height);
+    for (int i = 0; i < 2 * inputInt + 1; i++) {
+
+        float part_1 = (float) (1 / sqrt(2 * 3.14 * inputFloat * inputFloat));
+        float expInput = -(-inputInt + i) * (-inputInt + i) / (2 * inputFloat * inputFloat);
+
+        weightVector[i] = (float) (part_1 * exp(expInput));
+    }
+    LOGD("Good 403");
+    //do the first half of Gaussian transform, that is for all pixels aligned in 'X-axis'
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            algo_GaussianBlue_first( pixels,  width,  inputInt,  weightVector, weightLength, x, y);
+        }
+    }
+    LOGD("Good 410");
+    //do the second half of Gaussian transform, that is for all pixels aligned in 'Y-axis'
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+             algo_GaussianBlue_second(pixels,  height,  inputInt, weightVector,  weightLength,  x,  y);
+        }
+    }
+    LOGD("Good 417");
+}
+
+/**
+ * This function is used to perform the first half of Gaussian Blur transform, it returns the calculated int value q.
+ *
+ * @param weightVector, is the Gassian weight vector
+ * @param color         is the color to be transformed with red:0, green:1, blue:2
+ * @param positionX,    is the pixel's X coordinate
+ * @param positionY,    is the pixel's Y coordinate
+ */
+
+void algo_GaussianBlue_first(uint32_t* pixels, int width, int intInput0, float* weightVector, int weightLength,int positionX, int positionY) {
+    uint32_t red ;
+    uint32_t green ;
+    uint32_t blue ;
+    for (int i = 0; i < weightLength; i++) {
+
+        if (positionX - intInput0 + i >= 0 &&
+            positionX - intInput0 + i < width) {
+            red =  (uint32_t)weightVector[i] *(uint32_t)((pixels[positionX - intInput0 + i+width*positionY] & 0x00FF0000) >> 16);
+            green = (uint32_t)weightVector[i] *(uint32_t)((pixels[positionX - intInput0 + i+width*positionY] & 0x0000FF00) >> 8);
+            blue = (uint32_t) weightVector[i] *(uint32_t)(pixels[positionX - intInput0 + i+width*positionY] & 0x000000FF );
+
+            pixels[positionX - intInput0 + i+width*positionY] = (0xFF000000)|
+                                ((red << 16) & 0x00FF0000) |
+                                ((green << 8) & 0x0000FF00) |
+                                (blue & 0x000000FF);
+        } else {
+            pixels[positionX - intInput0 + i+width*positionY] = (0xFF000000)|
+                                                                ((0 << 16) & 0x00FF0000) |
+                                                                ((0 << 8) & 0x0000FF00) |
+                                                                (0 & 0x000000FF);
+        }
+    }
+}
+
+/**
+ * This function is used to perform the second half of Gaussian Blur transform, it returns the calculated int value p.
+ *
+ * @param weightVector, is the Gassian weight vector
+ * @param color         is the color to be transformed with red:0, green:1, blue:2
+ * @param positionX,    is the pixel's X coordinate
+ * @param positionY,    is the pixel's Y coordinate
+ */
+
+void algo_GaussianBlue_second(uint32_t* pixels, int height, int intInput0,float weightVector[], int weightLength, int positionX, int positionY) {
+    uint32_t red ;
+    uint32_t green ;
+    uint32_t blue ;
+    for (int i = 0; i < weightLength; i++) {
+
+        if (positionY - intInput0 + i >= 0 &&
+            positionY - intInput0 + i < height) {
+            red =  (uint32_t)weightVector[i] *(uint32_t)((pixels[positionX*height+positionY - intInput0 + i] & 0x00FF0000) >> 16);
+            green = (uint32_t)weightVector[i] *(uint32_t)((pixels[positionX*height+positionY - intInput0 + i] & 0x0000FF00) >> 8);
+            blue = (uint32_t) weightVector[i] *(uint32_t)(pixels[positionX*height+positionY - intInput0 + i] & 0x000000FF );
+
+            pixels[positionX*height+positionY - intInput0 + i] = (0xFF000000)|
+                                                                ((red << 16) & 0x00FF0000) |
+                                                                ((green << 8) & 0x0000FF00) |
+                                                                (blue & 0x000000FF);
+        } else {
+            pixels[positionX*height+positionY - intInput0 + i] = (0xFF000000)|
+                                                                 ((0 << 16) & 0x00FF0000) |
+                                                                 ((0 << 8) & 0x0000FF00) |
+                                                                 (0 & 0x000000FF);
+        }
+    }
+}
 
 
 
