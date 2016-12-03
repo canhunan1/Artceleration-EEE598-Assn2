@@ -176,44 +176,46 @@ void motionBlur(AndroidBitmapInfo* info, uint32_t * pixels, int dir, int radius)
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-static int rgb_clamp(int value) {
-    if(value > 255) {
-        return 255;
+
+ void Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonNeonEdges(JNIEnv * env, jobject  obj, jobject bitmapOri, jobject bitmapProcessed, jfloat f1, jfloat f2)
+{
+
+    AndroidBitmapInfo  infoOri;
+    int ret;
+    void* pixelsOri;
+    if ((ret = AndroidBitmap_getInfo(env, bitmapOri, &infoOri)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
     }
-    if(value < 0) {
-        return 0;
+    if (infoOri.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        LOGE("Bitmap format is not RGBA_8888 !");
+        return;
     }
-    return value;
-}
 
-static void brightness(AndroidBitmapInfo* info, void* pixels, float brightnessValue){
-    int xx, yy, red, green, blue;
-    uint32_t* line;
-    for(yy = 0; yy < info->height; yy++){
-        line = (uint32_t*)pixels;
-        for(xx =0; xx < info->width; xx++){
-
-            //extract the RGB values from the pixel
-            red = (int) ((line[xx] & 0x00FF0000) >> 16);
-            green = (int)((line[xx] & 0x0000FF00) >> 8);
-            blue = (int) (line[xx] & 0x00000FF );
-
-            //manipulate each value
-            red = rgb_clamp((int)(red * brightnessValue));
-            green = rgb_clamp((int)(green * brightnessValue));
-            blue = rgb_clamp((int)(blue * brightnessValue));
-
-            // set the new pixel back in
-            line[xx] = (0xFF000000)|
-                    ((red << 16) & 0x00FF0000) |
-                    ((green << 8) & 0x0000FF00) |
-                    (blue & 0x000000FF);
-        }
-
-        pixels = (char*)pixels + info->stride;
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapOri, &pixelsOri)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
-}
+    AndroidBitmapInfo  infoProcessed;
+    //int ret;
+    void* pixelsProcessed;
+    if ((ret = AndroidBitmap_getInfo(env, bitmapProcessed, &infoProcessed)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+    if (infoOri.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+        LOGE("Bitmap format is not RGBA_8888 !");
+        return;
+    }
 
+    if ((ret = AndroidBitmap_lockPixels(env, bitmapProcessed, &pixelsProcessed)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+    }
+#ifdef HAVE_NEON
+    neonNeonEdgeLinearSum( &infoOri,  pixelsOri, &infoProcessed,  pixelsProcessed, f1, f2);
+#endif
+    AndroidBitmap_unlockPixels(env, bitmapOri);
+    AndroidBitmap_unlockPixels(env, bitmapProcessed);
+    }
 
 JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_neonBrightness(JNIEnv * env, jobject  obj, jobject bitmap, jfloat brightnessValue)
 {
@@ -234,7 +236,7 @@ JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_ne
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
 
-    brightness(&info,pixels, brightnessValue);
+    //brightness(&info,pixels, brightnessValue);
     AndroidBitmap_unlockPixels(env, bitmap);
 }
 

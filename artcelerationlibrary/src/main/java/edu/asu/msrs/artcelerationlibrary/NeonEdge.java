@@ -26,7 +26,8 @@ public class NeonEdge {
         float[] f = {argsF[0]};
         GaussianBlur gaussianBlur=new GaussianBlur(img, r,f);
         img = gaussianBlur.startTransform();
-        neonEdgeLinearSum(img, argsF, original);
+        NativeTransform.neonNeonEdges(original, img,argsF[0], argsF[1] );
+        //neonEdgeLinearSum(img, argsF, original);
         return img;
     }
     /*

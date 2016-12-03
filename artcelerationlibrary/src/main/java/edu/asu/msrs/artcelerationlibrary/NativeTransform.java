@@ -18,7 +18,7 @@ public class NativeTransform {
     public native static String stringFromJNI();
     private native void jniColorFilter(Bitmap img,int[] args, int size);
     private native boolean neonMotionBlur(Bitmap img,int[] intArgus);
-
+    static public native void neonNeonEdges( Bitmap bitmapOri, Bitmap bitmapProcessed, float f1, float f2);
     public NativeTransform(){}
 
 
