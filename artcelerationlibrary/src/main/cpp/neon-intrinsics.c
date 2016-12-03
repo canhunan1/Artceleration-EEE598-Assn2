@@ -64,9 +64,13 @@ void fir_filter_neon_intrinsics(short *output, const short* input, const short* 
 void neonNeonEdgeLinearSum(AndroidBitmapInfo* infoOri, uint32_t * pixelsOri,AndroidBitmapInfo* infoProcessed, uint32_t * pixelsProcessed,float f1,float f2){
     uint32_t  width = infoOri->width;
     uint32_t  height = infoOri->height;
+    uint32x4_t alphaFactor = vdupq_n_u32(0xFF000000);
     uint32x4_t redFactor = vdupq_n_u32(0x00FF0000);
     uint32x4_t greenFactor = vdupq_n_u32(0x0000FF00);
     uint32x4_t blueFactor = vdupq_n_u32(0x000000FF);
+    uint32x4_t redShift = vdupq_n_u32(16);
+    uint32x4_t greenShift = vdupq_n_u32(8);
+
     float32x4_t f1V =  vmovq_n_f32((float32_t)f1);
     float32x4_t f2V =  vmovq_n_f32((float32_t)f2);
     uint32_t* linePro;
@@ -79,20 +83,20 @@ void neonNeonEdgeLinearSum(AndroidBitmapInfo* infoOri, uint32_t * pixelsOri,Andr
         for(int j = 0; j<width/4;j += 4) {
 
             uint32x4_t ori = vld1q_u32(&lineOri[j]);
-            uint32x4_t redOri = vandq_u32(ori, redFactor);
-            uint32x4_t greenOri = vandq_u32(ori, greenFactor);
+            uint32x4_t redOri = vqshlq_u32(vandq_u32(ori, redFactor),redShift);
+            uint32x4_t greenOri = vqshlq_u32(vandq_u32(ori, greenFactor),greenShift);
             uint32x4_t blueOri = vandq_u32(ori, blueFactor);
 
             uint32x4_t pre = vld1q_u32(&linePro[j]);
-            uint32x4_t redPre = vandq_u32(pre, redFactor);
-            uint32x4_t greenPre = vandq_u32(pre, greenFactor);
+            uint32x4_t redPre = vqshlq_u32(vandq_u32(pre, redFactor),redShift);
+            uint32x4_t greenPre = vqshlq_u32(vandq_u32(pre, greenFactor),greenShift);
             uint32x4_t bluePre = vandq_u32(pre, blueFactor);
 
-            float32x4_t red = vmlaq_f32(vmulq_f32(redPre , f1V), redOri, f2V);
-            float32x4_t green = vmlaq_f32(vmulq_f32(greenPre , f1V), greenOri, f2V);
-            float32x4_t blue = vmlaq_f32(vmulq_f32(bluePre , f1V), blueOri, f2V);
-
-
+            uint32x4_t red = vqshlq_u32(vcvtq_u32_f32(vmlaq_f32(vmulq_f32(redPre , f1V), redOri, f2V)),redShift);
+            uint32x4_t green = vqshlq_u32(vcvtq_u32_f32(vmlaq_f32(vmulq_f32(greenPre , f1V), greenOri, f2V)), greenShift);
+            uint32x4_t blue = vcvtq_u32_f32(vmlaq_f32(vmulq_f32(bluePre , f1V), blueOri, f2V));
+            uint32x4_t pixel = vorrq_u32(vorrq_u32(alphaFactor,red),vorrq_u32(green,blue));
+            vst1q_u32(&linePro[j],pixel);
             //uint8x8_t a =  vdup_n_u8(0);
         }
         pixelsProcessed = (uint32_t*)((char*)pixelsProcessed + infoProcessed->stride);
