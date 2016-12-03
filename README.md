@@ -383,7 +383,7 @@ As for check point-2, the major challenge is to set up native libaray and neon e
 ## Improvement
 The biggest improvement is writting all five algorithms in C++, we believe it will enhance the image process speed significantly! Also, try neon could be another potential solution for speed enhancement, however, it requires a good understanding of neon coding style.
 
-Second, to make it even user friendly, it's better to be able to access the user's photo database and do transforms on costumers' pictures, which could be really fine.
+Second, to make it even user friendly, it's better to be able to access the user's photo database and do transforms on costumers' pictures, which could be really fun.
 
 
 
