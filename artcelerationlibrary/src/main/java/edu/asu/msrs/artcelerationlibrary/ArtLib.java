@@ -24,7 +24,8 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by rlikamwa on 10/2/2016.
- * This class is art library class.
+ * This class is art library class, it definces several funciton that can be used by activities,
+ * and it connects activity to services.
  */
 
 public class ArtLib {
@@ -87,12 +88,13 @@ public class ArtLib {
         mActivity.bindService(new Intent(mActivity, TransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    //returns a string array which contains all the types of implemented image transformations
     public String[] getTransformsArray() {
-        //String[] transforms = {"Color Filter", "Motion Blur","Gaussian Blur", "Tilt Shift", "Neon Edges", "Test Transform"};
-        String[] transforms = {"Color Filter", "Motion Blur", "Gaussian Blur","Sobel edges", "Neon edges" };
+        String[] transforms = {"Color Filter", "Motion Blur", "Gaussian Blur","Sobel Edges", "Neon Edges" };
         return transforms;
     }
 
+    //returns a TransformTest object which contains all the parameters for all types of image transformations
     public TransformTest[] getTestsArray() {
         TransformTest[] transforms = new TransformTest[5];
         transforms[0] = new TransformTest(0, new int[]{0, 0, 30, 30, 100, 100, 255, 255, 0, 0, 30, 50, 60, 150, 90, 250,100, 100, 130, 130, 200, 200, 255, 255}, new float[]{0.1f, 0.2f, 0.3f});
@@ -114,9 +116,10 @@ public class ArtLib {
     * @param index      the type of the transform
     * @param intArgs    the integer arguments
     * @param floatArgs  the float arguments
-    * @return           true if the transform is started successfully, false otherwise
+    * @return           return a boolean value, true if the transform is started successfully, false otherwise
     * */
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs) {
+        //validate the input parameter first
         if(!argumentValidation(index, intArgs, floatArgs))
             return false;
         try {
@@ -160,6 +163,15 @@ public class ArtLib {
         }
         return true;
     }
+
+
+    /*
+    * This method is used to validate the input parameters.
+    * @param index      the type of the transform
+    * @param intArgs    the integer arguments
+    * @param floatArgs  the float arguments
+    * @return           return a boolean value, true if the inputs are correct, false otherwise
+    * */
     private boolean argumentValidation(int index, int[] intArgs, float[] floatArgs){
         int intLength = intArgs.length;
         float floatLength = floatArgs.length;

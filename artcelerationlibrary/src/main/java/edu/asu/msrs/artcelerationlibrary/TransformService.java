@@ -51,10 +51,12 @@ public class TransformService extends Service {
 
     }
 
+    /*
+    * This class defines what to do after got a message from library
+    * */
     class ArtTransformHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            //trasnformHelper(msg);
             replyTo = msg.replyTo;
             TransformType = msg.what;
             try {
@@ -66,35 +68,6 @@ public class TransformService extends Service {
 
     }
 
-    /*
-    * This class is used to process the message got from the activity
-    * @param msg get the message from the handler
-    * */
-    private void trasnformHelper(Message msg) {
-        switch (msg.what) {
-            case COLOR_FILTER:
-                break;
-            case MOTION_BLUR:
-                break;
-            case GAUSSIAN_BLUR:
-                break;
-            case SOBEL_EDGE:
-                break;
-            case NEON_EDGES:
-                break;
-            case TEST_TRANS:
-            default:
-                break;
-        }
-        Bitmap mutableBitmap = null;
-        try {
-            mutableBitmap = getBitmap(msg).img;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mutableBitmap = testTransform(mutableBitmap);
-        imageProcessed(mutableBitmap);
-    }
 
     /*
     * This method is to get the bitmap from the message

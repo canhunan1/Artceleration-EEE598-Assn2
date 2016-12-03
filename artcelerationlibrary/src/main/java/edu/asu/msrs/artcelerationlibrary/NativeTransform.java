@@ -37,6 +37,7 @@ public class NativeTransform {
     * This function is used to do call the native ColorFIlter function
     * @param img    img is a bitmap to be transformed
     * @param args   args is int array with input value of the color filter
+    * @return it returns a boolean value after transformation
     * */
     public boolean colorFilter(Bitmap img, int[] args)
     {

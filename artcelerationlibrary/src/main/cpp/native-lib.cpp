@@ -104,6 +104,7 @@ void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, voi
  * This is the function is used to do the color filter transform for a pixel
  * @inputParams   the input argument to compute the new pixel
  * @inputColor   the input color value for mathematical computation
+ * @return      it returns a int value for a coler channel
  * */
 int algo_ColorFilter(int inputColor, int inputParams[]) {
     // case 1: the input arguments are at neither 0 nor 255 boundary
