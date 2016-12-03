@@ -9,17 +9,23 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 
-
 public class NativeTransform {
     static {
         System.loadLibrary("native-lib");
     }
+
     public native static String myStringFromJNI();
+
     public native static String stringFromJNI();
-    private native void jniColorFilter(Bitmap img,int[] args, int size);
-    private native boolean neonMotionBlur(Bitmap img,int[] intArgus);
-    static public native void neonNeonEdges( Bitmap bitmapOri, Bitmap bitmapProcessed, float f1, float f2);
-    public NativeTransform(){}
+
+    private native void jniColorFilter(Bitmap img, int[] args, int size);
+
+    private native boolean nativeMotionBlur(Bitmap img, int[] intArgus);
+
+    static public native void neonNeonEdges(Bitmap bitmapOri, Bitmap bitmapProcessed, float f1, float f2);
+
+    public NativeTransform() {
+    }
 
 
     /*
@@ -27,10 +33,9 @@ public class NativeTransform {
     * @param img  img is a bitmap to be transformed
     * @param r    r is the radius of the motion transform
     * */
-    public void motionBlur(Bitmap img, int[] intArgus)
-    {
-        Log.d("native motion blur","dd");
-        neonMotionBlur( img,intArgus);
+    public void motionBlur(Bitmap img, int[] intArgus) {
+        Log.d("native motion blur", "dd");
+        nativeMotionBlur(img, intArgus);
     }
 
     /*
@@ -39,9 +44,8 @@ public class NativeTransform {
     * @param args   args is int array with input value of the color filter
     * @return it returns a boolean value after transformation
     * */
-    public boolean colorFilter(Bitmap img, int[] args)
-    {
-        Log.d("native color filter","dd");
+    public boolean colorFilter(Bitmap img, int[] args) {
+        Log.d("native color filter", "dd");
         jniColorFilter(img, args, args.length);
         return true;
     }
