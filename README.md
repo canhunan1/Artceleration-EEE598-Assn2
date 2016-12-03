@@ -357,22 +357,33 @@ The FIFO is actually realized by relying on the internal control of Android's ``
 
 
 ## Strategy
-1. In general, we discuss coding logic and brainstorm ideas together. As for task, one person majorly dedicated on writing code and the other person focuses on debugging and documentation writing.
+1. In general, we discuss coding logic and brainstorm ideas together. As for task, one person majorly dedicated on building up framework/service and the other person focuses on debugging and documentation writing. We also separate the image transform algorithm into half, one person writes three algorithms in Java while the other person writes two algorithms in C++.
 
 2. We meet weekly, checkout progress, solve issues and make plans for the next week. We made several internal check points:
 ```
             - discuss and try to understand the logic behine assignment;
             - review and type the servie/library-setup code taungt in class;
             - finish the rest of code required for a complete service/library, majorly how to send processed image back to client side;
-            - documentation writing;
+            - documentation writing for checkout point 1;
+            - setup native labrary;
+            - setup neon environment;
+            - algorithms development;
+            - app integration and debug;
+            - documentation writting for final;
 
 ```
 
 ## Challenges
-The major challenge is to understand how binder and messenger works together to send message and the logic behinde. Another chanllenge is how to send processed image back to client.
+There are several challenges associated with this project.
+
+As for check point-1, the major challenge is to understand how binder and messenger works together to send message and the logic behinde. Another chanllenge is how to send processed image back to client.
+
+As for check point-2, the major challenge is to set up native libaray and neon environment and interact them with higher layer languages-Java. 
 
 ## Improvement
-We will try to improve the performance of AsyncTask and using multi-threading method to do multiple image processing in the same time. 
+The biggest improvement is writting all five algorithms in C++, we believe it will enhance the image process speed significantly! Also, try neon could be another potential solution for speed enhancement, however, it requires a good understanding of neon coding style.
+
+Second, to make it even user friendly, it's better to be able to access the user's photo database and do transforms on costumers' pictures, which could be really fine.
 
 
 
