@@ -6,6 +6,9 @@ By Jianan Yang and Wenhao Chen
 ## Goal
 Artceleration is an Android library framework / service which enables user application to implement artistic transforms for images. In current version, it includes 5 different image tranformation functions for app developer to use - COLOR_FILTER, MOTION_BLUR, GAUSSIAN_BLUR, SOBEL_EDGES and NEON_EDGES.
 
+## Achievements
+We successfully implemented five different image transform algorithm. Out of five, three of them are written in ```Java``` and two of them are written in ```C++```. We tried to use neon to perform the last part of ```NeonEdge``` algorithm which is the linear combination of the original image and processed image. However, we think we failed at the last step. We could figure out how to set the calculated color values in two a ```Bitmap```. Due to the time limit we instead just implement the ```NeonEdge``` using ```Java```.  
+
 ## Client-end App
 The general idea of this library/service is to realize image transformation for app developers so they don't have to worry about building their own image process algorithm, instead they can just pick and use. Below is a sample application which uses our Artceleration library framework/service. In this app, user can specify the image transformation type from the drop-down located on top of screen, the transformed image will be showing if you drag the image left and right. Below are the examples:
 
@@ -348,6 +351,10 @@ extern "C"
     JNIEXPORT void JNICALL Java_edu_asu_msrs_artcelerationlibrary_NativeTransform_nativeMotionBlur(JNIEnv *env, jobject obj, jobject bitmap, jintArray args);
 }
 ```
+
+## FIFO implementation
+The FIFO is actually realized by relying on the internal control of Android's ```MessageQueue```. Everytime you send a ```TransformRequest```, the message is queued in the ```MessageQueue```, one the image process is done, the processed image is sent back in the order of what is the message queued in ```MessageQueue```. We've tested this and the image process indeed is sent back with the same order to ```TransformRequest```. 
+
 
 ## Strategy
 1. In general, we discuss coding logic and brainstorm ideas together. As for task, one person majorly dedicated on writing code and the other person focuses on debugging and documentation writing.
