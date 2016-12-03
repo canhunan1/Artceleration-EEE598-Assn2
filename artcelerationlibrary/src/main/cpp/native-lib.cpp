@@ -103,8 +103,10 @@ void colorFilter(JNIEnv *env, jintArray args, const AndroidBitmapInfo &info, voi
 /*
  * This is the function is used to do the color filter transform for a pixel
  * @inputParams   the input argument to compute the new pixel
+ * @inputColor   the input color value for mathematical computation
  * */
 int algo_ColorFilter(int inputColor, int inputParams[]) {
+    // case 1: the input arguments are at neither 0 nor 255 boundary
     if (inputParams[0] != 0 && inputParams[6] != 255) {
         if (inputColor < inputParams[0]) {
 
@@ -126,7 +128,7 @@ int algo_ColorFilter(int inputColor, int inputParams[]) {
 
             inputColor = (255 - inputParams[7]) / (255 - inputParams[6]) * (inputColor - inputParams[6]) + inputParams[7];
         }
-
+    // case 2: the first element of input arguments is at 0 while the last element is not at 255
     } else if (inputParams[0] == 0 && inputParams[6] != 255) {
 
         if (inputColor >= inputParams[0] && inputColor < inputParams[2]) {
@@ -146,6 +148,7 @@ int algo_ColorFilter(int inputColor, int inputParams[]) {
             inputColor = (255 - inputParams[7]) / (255 - inputParams[6]) * (inputColor - inputParams[6]) + inputParams[7];
         }
 
+    // case 3: the first element of input arguments is not 0 while the last element is 255
     } else if (inputParams[0] != 0) {
 
         if (inputColor < inputParams[0]) {
@@ -166,6 +169,7 @@ int algo_ColorFilter(int inputColor, int inputParams[]) {
 
         }
 
+    // case 4: the first and last element of input arguments are both at boundary, i.e. 0 and 255 respectively.
     } else {
 
         if (inputColor >= inputParams[0] && inputColor < inputParams[2]) {
