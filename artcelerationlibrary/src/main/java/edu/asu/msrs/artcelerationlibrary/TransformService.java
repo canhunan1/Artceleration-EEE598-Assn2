@@ -187,23 +187,28 @@ public class TransformService extends Service {
                     NativeTransform n = new NativeTransform();
                     n.colorFilter(tP[0].img, tP[0].intArgs);
                     img = tP[0].img;
+                    Log.d("Finished","COLOR_FILTER");
                     break;
                 case MOTION_BLUR:
                     NativeTransform m = new NativeTransform();
                     m.motionBlur(tP[0].img,tP[0].intArgs);
                     img = tP[0].img;
+                    Log.d("Finished","MOTION_BLUR");
                     break;
                 case GAUSSIAN_BLUR:
                     GaussianBlur gaussianBlur=new GaussianBlur(tP[0].img, tP[0].intArgs,tP[0].floatArgs);
                     img =  gaussianBlur.startTransform();
+                    Log.d("Finished","GAUSSIAN_BLUR");
                     break;
                 case SOBEL_EDGE:
                     SobelEdgeFilter sobelEdgeFilter=new SobelEdgeFilter(tP[0].img,tP[0].intArgs[0]);
                     img = sobelEdgeFilter.startTransform();
+                    Log.d("Finished","SOBEL_EDGE");
                     break;
                 case NEON_EDGES:
                     NeonEdge.NeonEdgeTransForm(tP[0].img,tP[0].floatArgs);
                     img = NeonEdge.NeonEdgeTransForm(tP[0].img,tP[0].floatArgs);
+                    Log.d("Finished","NEON_EDGES");
                     break;
                 default:
                     break;
